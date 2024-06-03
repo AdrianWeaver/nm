@@ -43,7 +43,7 @@ test:		$(NAME)
 			./$(NAME) $(NAME)
 
 vtest:		$(NAME)
-			valgrind --check-leaks=full ./$(NAME)
+			valgrind --leak-check=full ./$(NAME) $(NAME)
 
 .PHONY: all, clean, fclean, re, test, vtest, libft
 
