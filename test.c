@@ -312,9 +312,6 @@ int main(int argc, char **argv)
 		ft_printf("%s: %s: file format not recognized\n", argv[0], argv[1]);
 		exit(1);
 	}
-	(void)shdr;
-	(void)phdr;
-	(void)interp;
 	printf("Program Entry point: 0x%016lx\n", ehdr->e_entry);
 
 	/* the book states the following:
@@ -325,8 +322,19 @@ int main(int argc, char **argv)
 	StringTable = &mem[shdr[ehdr->e_shstrndx].sh_offset];
 	//Section header list
 	printf("ehdr->e_shnum: %d\n", ehdr->e_shnum);
-	for (int i = 0; i < ehdr->e_shnum; i++){
+	for (int i = 0; i < ehdr->e_shnum; i++)
+	{
 		printf("%-20s: 0x%016lx\n", &StringTable[shdr[i].sh_name], shdr[i].sh_addr);
+		if (shdr[i].sh_type != SHT_SYMTAB && shdr[i].sh_type != SHT_DYNSYM)
+			continue;
+		for (long unsigned int j = 0; j < (shdr[i].sh_size / sizeof(Elf64_Sym));j++)
+		{
+			Elf64_Sym *symtab = (Elf64_Sym *)(mem + shdr[i].sh_offset);
+			char *strtab = (char *)(mem + shdr[shdr[i].sh_link].sh_offset);
+			if (symtab[j].st_name == 0)
+				continue;
+			printf("value: %016lx  - symbol: %s\n", symtab[j].st_value, strtab + symtab[j].st_name);
+		}
 	}
 	//program header list
 	for (int i = 0; i < ehdr->e_phnum; i++){
