@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -7,33 +8,7 @@
 #include <stdlib.h>
 #include "libft.h"
 #include "libftprintf.h"
-
-const char *osabi[] = {
-	"System V",
-	"HP-UX",
-	"NetBSD",
-	"Linux",
-	"GNU Hurd", "",
-	"Solaris",
-	"AIX",
-	"IRIX",
-	"FreeBSD",
-	"Tru64",
-	"Novell Modesto",
-	"OpenBSD",
-	"OpenVMS",
-	"NonStop Kernel",
-	"AROS",
-	"FenixOS",
-	"Nuxi CloudABI",
-	"Stratus Technologies OpenVOS" };
-
-const char *ftype[] = {
-	"ET_NONE: Unknown",
-	"ET_REL: Relocatable file",
-	"ET_EXEC: Executable file",
-	"ET_DYN: Shared object",
-	"ET_CORE: Core file" };
+#include "ft_nm.h"
 
 char *get_architecture_name(Elf64_Ehdr *ehdr)
 {
@@ -188,6 +163,33 @@ char *get_architecture_name(Elf64_Ehdr *ehdr)
 
 void	print_ehdr(Elf64_Ehdr *ehdr)
 {
+	const char *osabi[] = {
+	"System V",
+	"HP-UX",
+	"NetBSD",
+	"Linux",
+	"GNU Hurd", "",
+	"Solaris",
+	"AIX",
+	"IRIX",
+	"FreeBSD",
+	"Tru64",
+	"Novell Modesto",
+	"OpenBSD",
+	"OpenVMS",
+	"NonStop Kernel",
+	"AROS",
+	"FenixOS",
+	"Nuxi CloudABI",
+	"Stratus Technologies OpenVOS" };
+
+const char *ftype[] = {
+	"ET_NONE: Unknown",
+	"ET_REL: Relocatable file",
+	"ET_EXEC: Executable file",
+	"ET_DYN: Shared object",
+	"ET_CORE: Core file" };
+
 	ft_printf("EHDR:\n%-16s: 0x%x, '%c%c%c'\n" //e_ident Magic Bytes
 		"%-16s: %s\n%-16s: %s\n%-16s: %s\n%-16s: %s\n%-16s: %s\n"
 		"%-16s: %d\n%-16s: 0x%016x\n%-16s: 0x%x\n%-16s: 0x%x\n"
@@ -272,88 +274,3 @@ void	print_shdr(Elf64_Shdr *shdr, unsigned char *StringTable)
 			shdr->sh_entsize);
 }
 
-int main(int argc, char **argv)
-{
-	int			fd;
-	uint8_t		*mem;
-	struct stat	st;
-	unsigned char		*StringTable;
-	char		*interp;
-	char		*target;
-
-	Elf64_Ehdr	*ehdr;		//initial ELF header
-	Elf64_Phdr	*phdr;		//program header
-	Elf64_Shdr	*shdr;		//section header
-
-	target = argv[1];
-	if (argc < 2){
-		target = "a.out";
-	}
-	if ((fd = open(target, O_RDONLY)) < 0){
-		exit(1);
-	}
-	if (fstat(fd, &st) < 0)
-	{
-		perror("fstat");
-		exit(1);
-	}
-	mem = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if (mem == MAP_FAILED)
-	{
-		perror("mmap");
-		exit(1);
-	}
-	ehdr = (Elf64_Ehdr *)mem;
-	print_ehdr(ehdr);
-	phdr = (Elf64_Phdr *)&mem[ehdr->e_phoff];	//program header offset
-	shdr = (Elf64_Shdr *)&mem[ehdr->e_shoff];	//section header offset
-	if (mem[2] != 0x7f && ft_strncmp((char *)&mem[1], "ELF",3))
-	{
-		ft_printf("%s: %s: file format not recognized\n", argv[0], argv[1]);
-		exit(1);
-	}
-	printf("Program Entry point: 0x%016lx\n", ehdr->e_entry);
-
-	/* the book states the following:
-	 * we find the string table for the section header names
-	 * with e_shstrndx
-	 * which gives the index of which section holds the string table.
-	*/
-	StringTable = &mem[shdr[ehdr->e_shstrndx].sh_offset];
-	//Section header list
-	printf("ehdr->e_shnum: %d\n", ehdr->e_shnum);
-	for (int i = 0; i < ehdr->e_shnum; i++)
-	{
-		printf("%-20s: 0x%016lx\n", &StringTable[shdr[i].sh_name], shdr[i].sh_addr);
-		if (shdr[i].sh_type != SHT_SYMTAB && shdr[i].sh_type != SHT_DYNSYM)
-			continue;
-		for (long unsigned int j = 0; j < (shdr[i].sh_size / sizeof(Elf64_Sym));j++)
-		{
-			Elf64_Sym *symtab = (Elf64_Sym *)(mem + shdr[i].sh_offset);
-			char *strtab = (char *)(mem + shdr[shdr[i].sh_link].sh_offset);
-			if (symtab[j].st_name == 0)
-				continue;
-			printf("value: %016lx  - symbol: %s\n", symtab[j].st_value, strtab + symtab[j].st_name);
-		}
-	}
-	//program header list
-	for (int i = 0; i < ehdr->e_phnum; i++){
-		switch (phdr[i].p_type)
-		{
-			case PT_LOAD: //loadable segment
-				printf("%-20s: 0x%lx\n", (phdr[i].p_offset ? "Data segment" : "Text segment"), phdr[i].p_vaddr);
-				break;
-			case PT_INTERP: //null terminated pathname for interpreter
-				interp = ((char *)(&mem[phdr[i].p_offset]));
-				printf("%-20s: %s\n", "Interpreter", interp);
-				break;
-			case PT_NOTE:
-				printf("%-20s: 0x%lx\n", "Note segment", phdr[i].p_vaddr);
-				break;
-			case PT_DYNAMIC:
-				printf("%-20s: 0x%lx\n", "Dynamic segment", phdr[i].p_vaddr);
-				break;
-		}
-	 }
-	return (0);
-}

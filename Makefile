@@ -3,7 +3,7 @@ NAME	= ft_nm
 CC		=	gcc
 INC		=	-I ./includes -I libft/includes
 
-SRCS	=	test.c
+SRCS	=	main.c utils.c symbols.c
 OBJS	=	$(addprefix $(OBJS_PATH),$(SRCS:.c=.o))
 DEPS	= $(OBJS:.o=.d)
 
@@ -20,7 +20,7 @@ all:	$(NAME)
 $(NAME):	$(OBJS)
 			$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
 
-$(OBJS):	$(SRCS)
+$(OBJS_PATH)%.o:	%.c
 			mkdir -p $(OBJSPATH)
 			$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@ $(INC)
 
