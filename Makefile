@@ -3,7 +3,10 @@ NAME	= ft_nm
 CC		=	gcc
 INC		=	-I ./includes -I libft/includes
 
-SRCS	=	main.c utils.c symbols.c
+SRCS	=	main.c\
+			utils.c\
+			symbols.c
+
 OBJS	=	$(addprefix $(OBJS_PATH),$(SRCS:.c=.o))
 DEPS	= $(OBJS:.o=.d)
 
@@ -22,7 +25,7 @@ $(NAME):	$(OBJS)
 
 $(OBJS_PATH)%.o:	%.c
 			mkdir -p $(OBJSPATH)
-			$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o $@ $(INC)
+			$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ $(INC)
 
 
 libft:		$(LIBFT)
@@ -47,3 +50,4 @@ vtest:		$(NAME)
 
 .PHONY: all, clean, fclean, re, test, vtest, libft
 
+-include $(DEPS)
