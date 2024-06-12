@@ -243,34 +243,87 @@ char	*get_shtype(Elf64_Shdr *shdr)
 			return "SHT_LOUSER: range's lower bound indices reserved for app program";
 		case SHT_HIUSER:
 			return "SHT_HIUSER: range's high bound incides reserved for app program";
-		default:
-			if (shdr->sh_type > SHT_LOUSER && shdr->sh_type < SHT_HIUSER)
+		default: if (shdr->sh_type > SHT_LOUSER && shdr->sh_type < SHT_HIUSER)
 				return "Inbound indices reserved for app program";
 			return "unknown";
 	}
 }
 
-void	print_shdr(Elf64_Shdr *shdr, unsigned char *StringTable)
+char *get_sh_flags(uint32_t sh_flags)
 {
-	ft_printf("%-16s: %s\n"		//name
-			"%-16s: %s\n"		//type
-			"%-16s: %o\n"		//flags
-			"%-16s: %x\n"		//addr
-			"%-16s: %x\n"		//offset
-			"%-16s: %s\n"		//size
-			"%-16s: %s\n"		//link
-			"%-16s: %s\n"		//info
-			"%-16s: %s\n"		//addralign
-			"%-16s: %s\n",		//entsize
-			StringTable[shdr->sh_name],
-			get_shtype(shdr),
-			shdr->sh_flags,
-			shdr->sh_addr,
-			shdr->sh_offset,
-			shdr->sh_size,
-			shdr->sh_link,
-			shdr->sh_info,
-			shdr->sh_addralign,
-			shdr->sh_entsize);
+	char	*str_flags;
+
+	str_flags = malloc(sizeof(*str_flags) * 1);
+	if (!str_flags)
+		return (NULL);
+	*str_flags = 0;
+	if (sh_flags == 0) {
+		str_flags = ft_strjoin_free(str_flags, "NO FLAGS");
+		return (str_flags);
+	}
+	if (sh_flags & SHF_MASKPROC) {
+		str_flags = ft_strjoin_free(str_flags, "SHF_MASKPROC");
+		return (str_flags);
+	}
+	if (sh_flags & SHF_WRITE)
+		str_flags = ft_strjoin_free(str_flags, "SHF_WRITE ");
+	if (sh_flags & SHF_ALLOC)
+		str_flags = ft_strjoin_free(str_flags, "SHF_ALLOC ");
+	if (sh_flags & SHF_EXECINSTR)
+		str_flags = ft_strjoin_free(str_flags, "SHF_EXECINSTR ");
+	if (sh_flags & SHF_MERGE)
+		str_flags = ft_strjoin_free(str_flags, "SHF_MERGE ");
+	if (sh_flags & SHF_STRINGS)
+		str_flags = ft_strjoin_free(str_flags, "SHF_STRINGS ");
+	if (sh_flags & SHF_INFO_LINK)
+		str_flags = ft_strjoin_free(str_flags, "SHF_INFO_LINK ");
+	if (sh_flags & SHF_LINK_ORDER)
+		str_flags = ft_strjoin_free(str_flags, "SHF_LINK_ORDER ");
+	if (sh_flags & SHF_OS_NONCONFORMING)
+		str_flags = ft_strjoin_free(str_flags, "SHF_OS_NONCONFORMING ");
+	if (sh_flags & SHF_GROUP)
+		str_flags = ft_strjoin_free(str_flags, "SHF_GROUP ");
+	if (sh_flags & SHF_TLS)
+		str_flags = ft_strjoin_free(str_flags, "SHF_TLS ");
+	if (sh_flags & SHF_COMPRESSED)
+		str_flags = ft_strjoin_free(str_flags, "SHF_COMPRESSED ");
+	if (sh_flags & SHF_MASKOS)
+		str_flags = ft_strjoin_free(str_flags, "SHF_MASKOS ");
+	if (sh_flags & SHF_GNU_RETAIN)
+		str_flags = ft_strjoin_free(str_flags, "SHF_GNU_RETAIN ");
+	if (sh_flags & SHF_ORDERED)
+		str_flags = ft_strjoin_free(str_flags, "SHF_GNU_ORDERED ");
+	if (sh_flags & SHF_EXCLUDE)
+		str_flags = ft_strjoin_free(str_flags, "SHF_EXCLUDE ");
+	return (str_flags);
 }
+
+void	print_64shdr(Elf64_Shdr *shdr, char *stringTable)
+{
+	char *str_flags;
+
+	str_flags = get_sh_flags(shdr->sh_flags);
+	ft_printf("\n%-16s: %s\n"		//name
+			"%-16s: %s\n"		//type
+			"%-16s: %s\n"		//flags
+			"%-16s: 0x%016x\n"		//addr
+			"%-16s: 0x%016x\n"		//offset
+			"%-16s: %d\n"		//size
+			"%-16s: %d\n"		//link
+			"%-16s: %d\n"		//info
+			"%-16s: %d\n"		//addralign
+			"%-16s: %d\n",		//entsize
+			"SECTION", &stringTable[shdr->sh_name],
+			"sh_type", get_shtype(shdr),
+			"sh_flag", str_flags,
+			"sh_addr", shdr->sh_addr,
+			"sh_offset", shdr->sh_offset,
+			"sh_size", shdr->sh_size,
+			"sh_link", shdr->sh_link,
+			"sh_info", shdr->sh_info,
+			"sh_addralign", shdr->sh_addralign,
+			"sh_entsize", shdr->sh_entsize);
+	free(str_flags);
+}
+
 

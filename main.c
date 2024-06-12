@@ -9,16 +9,19 @@
 #include "libftprintf.h"
 #include "ft_nm.h"
 
+#define PRINT_EHDR 1
+
+//TODO: Protect all mem access.
+
 int main(int argc, char **argv)
 {
 	int			fd;
 	uint8_t		*mem;
 	struct stat	st;
-	unsigned char		*StringTable;
+	char		*stringTable;
 	char		*interp;
 	char		*target;
-	static int	test;
-	(void)test;
+	t_list		*symList;
 
 	Elf64_Ehdr	*ehdr;		//initial ELF header
 	Elf64_Phdr	*phdr;		//program header
@@ -28,27 +31,17 @@ int main(int argc, char **argv)
 	if (argc < 2){
 		target = "a.out";
 	}
-	if ((fd = open(target, O_RDONLY)) < 0){
+	//TODO: add a loop per file
+	if (!(mem = handleFile(target, &fd, &st)))
 		exit(1);
-	}
-	if (fstat(fd, &st) < 0)
-	{
-		perror("fstat");
-		exit(1);
-	}
-	mem = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if (mem == MAP_FAILED)
-	{
-		perror("mmap");
-		exit(1);
-	}
+	//TODO: munmap(mem, st->st_size);
 	ehdr = (Elf64_Ehdr *)mem;
 	print_ehdr(ehdr);
 	phdr = (Elf64_Phdr *)&mem[ehdr->e_phoff];	//program header offset
 	shdr = (Elf64_Shdr *)&mem[ehdr->e_shoff];	//section header offset
 	if (mem[2] != 0x7f && ft_strncmp((char *)&mem[1], "ELF",3))
 	{
-		ft_printf("%s: %s: file format not recognized\n", argv[0], argv[1]);
+		ft_printf("%s: %s: file format not recognized\n", argv[0], target);
 		exit(1);
 	}
 	printf("Program Entry point: 0x%016lx\n", ehdr->e_entry);
@@ -58,12 +51,19 @@ int main(int argc, char **argv)
 	 * with e_shstrndx
 	 * which gives the index of which section holds the string table.
 	*/
-	StringTable = &mem[shdr[ehdr->e_shstrndx].sh_offset];
+	stringTable = (char *)&mem[shdr[ehdr->e_shstrndx].sh_offset];
 	//Section header list
 	printf("ehdr->e_shnum: %d\n", ehdr->e_shnum);
+	symList = get64SymbolList(mem, &st, target);
+	if (!symList)
+		exit (1); //TODO: replace by a continue with several files.
+	printSymbols(symList);
+	ft_lstclear(&symList, &free);
+	return (2);
 	for (int i = 0; i < ehdr->e_shnum; i++)
 	{
-		printf("%-20s: 0x%016lx\n", &StringTable[shdr[i].sh_name], shdr[i].sh_addr);
+		//printf("%-20s: 0x%016lx\n", &stringTable[shdr[i].sh_name], shdr[i].sh_addr);
+		print_64shdr(&shdr[i], stringTable);
 		if (shdr[i].sh_type != SHT_SYMTAB && shdr[i].sh_type != SHT_DYNSYM)
 			continue;
 		for (Elf64_Addr j = 0; j < (shdr[i].sh_size / sizeof(Elf64_Sym));j++)
@@ -72,7 +72,8 @@ int main(int argc, char **argv)
 			char *strtab = (char *)(mem + shdr[shdr[i].sh_link].sh_offset);
 			//if (symtab[j].st_name == 0)
 				//continue;
-			printf("value: %016lx  - symbol: %s\n", symtab[j].st_value, strtab + symtab[j].st_name);
+			printf("value: %016lx  - symbol: %s\n", symtab[j].st_value,
+					strtab + symtab[j].st_name);
 			printf("bind: %d - type: %d\n", ELF64_ST_BIND(symtab[j].st_info), ELF64_ST_TYPE(symtab[j].st_info));
 			switch (symtab[j].st_shndx) {
 			case SHN_ABS:
@@ -89,7 +90,7 @@ int main(int argc, char **argv)
 				break;
 			default:
 			if (symtab[j].st_shndx < 0xff00)
-				printf("contained in: %s\n", &StringTable[shdr[symtab[j].st_shndx].sh_name]);
+				printf("contained in: %s\n", &stringTable[shdr[symtab[j].st_shndx].sh_name]);
 			}
 		}
 		printf("SHN_ABS: %d\nSHN_COMMON: %d\nSHN_UNDEF: %d\nSHN_XINDEX: %d\n",SHN_ABS, SHN_COMMON, SHN_UNDEF, SHN_XINDEX);
@@ -113,5 +114,6 @@ int main(int argc, char **argv)
 				break;
 		}
 	 }
+	munmap(mem, st.st_size);
 	return (0);
 }

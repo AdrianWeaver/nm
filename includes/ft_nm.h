@@ -2,13 +2,17 @@
  #define FT_NM_H
 
 typedef struct s_symbol {
-	uint8_t		*value;
+	unsigned long int	value;
 	char		type;
 	char		*name;
 } t_symbol;
 
+uint8_t	*handleFile(char *target, int *fd, struct stat *st);
+void	printSymbols(t_list *symList);
 char	*get_architecture_name(Elf64_Ehdr *ehdr);
 void	print_ehdr(Elf64_Ehdr *ehdr);
 char	*get_shtype(Elf64_Shdr *shdr);
-void	print_shdr(Elf64_Shdr *shdr, unsigned char *StringTable);
+void	print_64shdr(Elf64_Shdr *shdr, char *stringTable);
+t_list	*get64SymbolList(uint8_t *mem, struct stat *st, char *target);
+
 #endif
