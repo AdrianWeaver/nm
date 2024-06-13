@@ -10,9 +10,22 @@
 #include "libftprintf.h"
 #include "ft_nm.h"
 
-char get64SymbolType(Elf64_Sym sym)
+Elf64_Shdr *getSymbolShdr(Elf64_Addr *mem, Elf64_Sym sym)
 {
-	(void) sym;
+	Elf64_Shdr	*shdr;
+
+	shdr = NULL;
+	(void)shdr;	//no errors at compilation
+	(void)mem;	//no errors at compilation
+	(void)sym;	//no errors at compilation
+	return (shdr);
+
+}
+
+char get64SymbolType(Elf64_Sym sym, Elf64_Shdr *shdr)
+{
+	(void) sym;		//no errors at compilation
+	(void) shdr;	//no errors at compilation
 	return ('z');
 }
 
@@ -101,7 +114,7 @@ t_list	*get64SymbolList(uint8_t *mem, struct stat *st, char *target)
 				return (NULL);
 			}
 			tmp->value = symTab[j].st_value;
-			tmp->type = get64SymbolType(symTab[j]);
+			tmp->type = get64SymbolType(symTab[j], getSymbolShdr((Elf64_Addr *)mem, symTab[j]));
 			tmp->name = (symTab[j].st_name != 0 ? &symStrTab[symTab[j].st_name] : "");
 			new = ft_lstnew(tmp);
 			ft_lstadd_back(&symList, new);
