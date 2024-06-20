@@ -9,9 +9,56 @@
 #include "libftprintf.h"
 #include "ft_nm.h"
 
-#define PRINT_EHDR 1
+#define INVALIDMEMORY -1
+#define PRINT_EHDR 0
 
-//TODO: Protect all mem access.
+/* The purpose of this macro is to facilitate memory protection
+ * when reading the initial file stored with mmap in variable 'mem'
+ * it needs a uint8_t *mem, a struct stat st in the same scope
+ * given as parameter type of what needs to be read and offset to be read
+ * it provides a pointer on the type asked for or returns ERROR
+ * BE WARNED: It does not work for char * that needs a separate macro
+ */
+#define MEM(type, offset)({\
+	type *local_var = (type *)protected_read(mem, st.size, offset, sizeof(type));\
+	if (!local_var)\
+		return ERROR;\
+	local_var;\
+})
+/* The purpose of this macro is to provide a free of segfault version of
+ * the upper MEM macro for strings as char *
+ * it needs a uint8_t *mem, a struct stat st in the same scope
+ * given as parameter: offset to be read
+ * it provides a string or returns ERROR
+ */
+#define MEMSTR(offset) ({ \
+	char *local_str = protected_read_str(mem, st.size, offset); \
+	if (!local_str) \
+		return ERROR; \
+	local_str; \
+})
+
+
+void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
+{
+	if (mem + offset + buffer > mem + max)
+		return (NULL);
+	else
+		return (mem + offset);
+}
+
+char *protected_read_str(uint8_t *mem, size_t max, int offset)
+{
+	if (mem + offset < mem + max)
+	{
+		for (size_t i = 0; mem + i < mem + max; i++)
+		{
+			if (mem[i] == '\0')
+				return ((char *)mem + offset);
+		}
+	}
+	return (NULL);
+}
 
 int main(int argc, char **argv)
 {
@@ -59,7 +106,6 @@ int main(int argc, char **argv)
 		exit (1); //TODO: replace by a continue with several files.
 	printSymbols(symList);
 	ft_lstclear(&symList, &free);
-	return (2);
 	for (int i = 0; i < ehdr->e_shnum; i++)
 	{
 		//printf("%-20s: 0x%016lx\n", &stringTable[shdr[i].sh_name], shdr[i].sh_addr);
