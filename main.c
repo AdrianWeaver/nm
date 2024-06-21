@@ -9,38 +9,54 @@
 #include "libftprintf.h"
 #include "ft_nm.h"
 
-#define INVALIDMEMORY -1
+#define INVALIDMEMORY 0
 #define PRINT_EHDR 0
 
 /* The purpose of this macro is to facilitate memory protection
  * when reading the initial file stored with mmap in variable 'mem'
  * it needs a uint8_t *mem, a struct stat st in the same scope
- * given as parameter type of what needs to be read and offset to be read
- * it provides a pointer on the type asked for or returns ERROR
- * BE WARNED: It does not work for char * that needs a separate macro
+ * three versions are provided
+ * 1 arg, gets a string
+ * 2 args, gets an address of type and continue in case of error
+ * 3 args, same as 2 except returns with value of third arg.
  */
-#define MEM(type, offset)({\
-	type *local_var = (type *)protected_read(mem, st.size, offset, sizeof(type));\
+#define GETMEMORYMACRO(_1,_2,_3,NAME,...) NAME
+#define MEM(...) GETMEMORYMACRO(__VA_ARGS__, MEM03, MEM02, MEM01)(__VA_ARGS__)
+
+/*version returning */
+#define MEM03(type, offset, errorcode)({\
+	type *local_var = (type *)protected_read(mem, st.st_size, offset, sizeof(type));\
 	if (!local_var)\
-		return ERROR;\
+		return errorcode;\
 	local_var;\
 })
+
+/* continue version */
+#define MEM02(type, offset)({\
+	type *local_var = (type *)protected_read(mem, st.st_size, offset, sizeof(type));\
+	if (!local_var)\
+		continue;\
+	local_var;\
+})
+
 /* The purpose of this macro is to provide a free of segfault version of
  * the upper MEM macro for strings as char *
  * it needs a uint8_t *mem, a struct stat st in the same scope
  * given as parameter: offset to be read
  * it provides a string or returns ERROR
  */
-#define MEMSTR(offset) ({ \
-	char *local_str = protected_read_str(mem, st.size, offset); \
-	if (!local_str) \
-		return ERROR; \
-	local_str; \
+#define MEM01(offset) ({ \
+	char *local_str = protected_read_str(mem, st.st_size, offset);\
+	if (!local_str)\
+		return 0;\
+	local_str;\
 })
 
 
 void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
 {
+	if (offset < 0)
+		return (NULL);
 	if (mem + offset + buffer > mem + max)
 		return (NULL);
 	else
@@ -49,6 +65,8 @@ void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
 
 char *protected_read_str(uint8_t *mem, size_t max, int offset)
 {
+	if (offset < 0)
+		return (NULL);
 	if (mem + offset < mem + max)
 	{
 		for (size_t i = 0; mem + i < mem + max; i++)
@@ -80,13 +98,13 @@ int main(int argc, char **argv)
 	}
 	//TODO: add a loop per file
 	if (!(mem = handleFile(target, &fd, &st)))
-		exit(1);
 	//TODO: munmap(mem, st->st_size);
+		exit(1);
 	ehdr = (Elf64_Ehdr *)mem;
 	print_ehdr(ehdr);
-	phdr = (Elf64_Phdr *)&mem[ehdr->e_phoff];	//program header offset
-	shdr = (Elf64_Shdr *)&mem[ehdr->e_shoff];	//section header offset
-	if (mem[2] != 0x7f && ft_strncmp((char *)&mem[1], "ELF",3))
+	phdr = (Elf64_Phdr *)MEM(Elf64_Phdr, ehdr->e_phoff, 0);//mem[ehdr->e_phoff];	//program header offset
+	shdr = (Elf64_Shdr *)MEM(Elf64_Shdr, ehdr->e_shoff, 0);//&mem[ehdr->e_shoff];	//section header offset
+	if (*MEM(2) != 0x7f && ft_strncmp(MEM(1), "ELF",3))
 	{
 		ft_printf("%s: %s: file format not recognized\n", argv[0], target);
 		exit(1);
@@ -98,12 +116,12 @@ int main(int argc, char **argv)
 	 * with e_shstrndx
 	 * which gives the index of which section holds the string table.
 	*/
-	stringTable = (char *)&mem[shdr[ehdr->e_shstrndx].sh_offset];
+	stringTable = MEM(shdr[ehdr->e_shstrndx].sh_offset);
 	//Section header list
 	printf("ehdr->e_shnum: %d\n", ehdr->e_shnum);
 	symList = get64SymbolList(mem, &st, target);
 	if (!symList)
-		exit (1); //TODO: replace by a continue with several files.
+		exit (1);			//TODO: replace by a continue with several files.
 	printSymbols(symList);
 	ft_lstclear(&symList, &free);
 	for (int i = 0; i < ehdr->e_shnum; i++)

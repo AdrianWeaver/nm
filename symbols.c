@@ -117,7 +117,7 @@ t_list	*get64SymbolList(uint8_t *mem, struct stat *st, char *target)
 			tmp->type = get64SymbolType(symTab[j], getSymbolShdr((Elf64_Addr *)mem, symTab[j]));
 			tmp->name = (symTab[j].st_name != 0 ? &symStrTab[symTab[j].st_name] : "");
 			new = ft_lstnew(tmp);
-			ft_lstadd_back(&symList, new);
+			ft_lstadd_front(&symList, new);
 		}
 	}
 	return (symList);
