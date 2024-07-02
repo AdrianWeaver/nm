@@ -326,4 +326,27 @@ void	print_64shdr(Elf64_Shdr *shdr, char *stringTable)
 	free(str_flags);
 }
 
+void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
+{
+	if (offset < 0)
+		return (NULL);
+	if (mem + offset + buffer > mem + max)
+		return (NULL);
+	else
+		return (mem + offset);
+}
 
+char *protected_read_str(uint8_t *mem, size_t max, int offset)
+{
+	if (offset < 0)
+		return (NULL);
+	if (mem + offset < mem + max)
+	{
+		for (size_t i = 0; mem + i < mem + max; i++)
+		{
+			if (mem[i] == '\0')
+				return ((char *)mem + offset);
+		}
+	}
+	return (NULL);
+}

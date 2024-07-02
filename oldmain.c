@@ -12,47 +12,6 @@
 #define INVALIDMEMORY 0
 #define PRINT_EHDR 0
 
-/* The purpose of this macro is to facilitate memory protection
- * when reading the initial file stored with mmap in variable 'mem'
- * it needs a uint8_t *mem, a struct stat st in the same scope
- * three versions are provided
- * 1 arg, gets a string
- * 2 args, gets an address of type and continue in case of error
- * 3 args, same as 2 except returns with value of third arg.
- */
-#define GETMEMORYMACRO(_1,_2,_3,NAME,...) NAME
-#define MEM(...) GETMEMORYMACRO(__VA_ARGS__, MEM03, MEM02, MEM01)(__VA_ARGS__)
-
-/*version returning */
-#define MEM03(type, offset, errorcode)({\
-	type *local_var = (type *)protected_read(mem, st.st_size, offset, sizeof(type));\
-	if (!local_var)\
-		return errorcode;\
-	local_var;\
-})
-
-/* continue version */
-#define MEM02(type, offset)({\
-	type *local_var = (type *)protected_read(mem, st.st_size, offset, sizeof(type));\
-	if (!local_var)\
-		continue;\
-	local_var;\
-})
-
-/* The purpose of this macro is to provide a free of segfault version of
- * the upper MEM macro for strings as char *
- * it needs a uint8_t *mem, a struct stat st in the same scope
- * given as parameter: offset to be read
- * it provides a string or returns ERROR
- */
-#define MEM01(offset) ({ \
-	char *local_str = protected_read_str(mem, st.st_size, offset);\
-	if (!local_str)\
-		return 0;\
-	local_str;\
-})
-
-
 void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
 {
 	if (offset < 0)

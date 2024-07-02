@@ -15,6 +15,11 @@ Elf64_Shdr *getSymbolShdr(Elf64_Addr *mem, Elf64_Sym sym)
 	Elf64_Shdr	*shdr;
 
 	shdr = NULL;
+	// common = c
+
+	// undefined section
+		//and weak = w
+		//and weak and object
 	(void)shdr;	//no errors at compilation
 	(void)mem;	//no errors at compilation
 	(void)sym;	//no errors at compilation
