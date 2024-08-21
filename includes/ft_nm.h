@@ -3,8 +3,8 @@
 
 typedef struct s_symbol {
 	unsigned long int	value;
-	char		type;
-	char		*name;
+	char				type;
+	char				*name;
 } t_symbol;
 
 uint8_t	*handleFile(char *target, int *fd, struct stat *st);
