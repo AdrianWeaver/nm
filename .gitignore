@@ -36,6 +36,7 @@
 *.x86_64
 *.hex
 ft_nm
+ELFcreator
 
 # Debug files
 *.dSYM/
@@ -56,3 +57,8 @@ dkms.conf
 *.swp
 *.swo
 *tags
+
+# Common debugging files
+toto*
+forbidden
+modified_elf

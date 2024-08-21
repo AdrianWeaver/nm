@@ -48,6 +48,14 @@ test:		$(NAME)
 vtest:		$(NAME)
 			valgrind --leak-check=full ./$(NAME) $(NAME)
 
-.PHONY: all, clean, fclean, re, test, vtest, libft
+create:		
+			$(CC) $(CFLAGS) elfcreator.c -o ELFcreator
+			@./ELFcreator
+			@$(MAKE) --no-print-directory nm
+
+nm:			
+			-nm modified_elf
+			
+.PHONY: all, clean, fclean, re, test, vtest, create, libft
 
 -include $(DEPS)
