@@ -5,6 +5,14 @@
 #include <inttypes.h>
 #include <elf.h>
 #include <sys/mman.h>
+#include <limits.h>
+#ifndef INPUTFILE
+# define INPUTFILE "a.out"
+#endif
+
+#ifndef MODIFIED_FILE
+# define MODIFIED_FILE "modified_elf"
+#endif
 
 
 //main to explain segfaults
@@ -16,13 +24,15 @@ int main(void)
 	int		ret;
 	int		to_write;
 
-	stat("a.out", &st);
+	stat(INPUTFILE, &st);
 	to_write = st.st_size;
-	fd = open("a.out", O_RDONLY);
+	fd = open(INPUTFILE, O_RDONLY);
+	if (fd < 0)
+		return (fprintf(stderr, "the file %s does not exist\n", INPUTFILE), 1);
 	mem = mmap(NULL, st.st_size, PROT_WRITE | PROT_READ, MAP_PRIVATE, fd, 0);
 	close(fd);
-	fd = open("truncated", O_CREAT | O_RDWR, 0750);
-	((Elf64_Ehdr*) mem)->e_shoff = 0;
+	fd = open(MODIFIED_FILE, O_CREAT | O_RDWR, 0750);
+	((Elf64_Ehdr*) mem)->e_shstrndx = SHN_UNDEF;
 	while ((ret = write(fd, mem, to_write) > 0))
 	{
 		to_write -= ret;
