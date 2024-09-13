@@ -32,7 +32,10 @@ int main(void)
 	mem = mmap(NULL, st.st_size, PROT_WRITE | PROT_READ, MAP_PRIVATE, fd, 0);
 	close(fd);
 	fd = open(MODIFIED_FILE, O_CREAT | O_RDWR, 0750);
-	((Elf64_Ehdr*) mem)->e_shstrndx = SHN_UNDEF;
+	// modify below
+
+	((Elf64_Ehdr*) mem)->e_shoff = 0;
+	// modify above
 	while ((ret = write(fd, mem, to_write) > 0))
 	{
 		to_write -= ret;
