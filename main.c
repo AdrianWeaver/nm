@@ -113,25 +113,26 @@ int	parse_ehdr(t_mem *file, struct stat *st, char *target)
 		//ElfN_Off	e_phoff;	-> apparently only wrong if <0 file format error
 	if (ehdr->e_phoff < 0)
 		goto format_error;
-		//ElfN_Off	e_shoff;
-		//uint32_t	e_flags;
-		//uint16_t	e_ehsize;
-		//uint16_t	e_phentsize;
-		//uint16_t	e_phnum;
-		//uint16_t	e_shentsize; -> 
+		//ElfN_Off	e_shoff; -> triggers bfd errors
+		//uint32_t	e_flags; -> not checked by nm
+		//uint16_t	e_ehsize; -> not checked by nm
+		//uint16_t	e_phentsize; -> not checked by nm
+		//uint16_t	e_phnum; -> checked by nm, weird behaviour if -1
+	if (ehdr->e_phnum < 0)
+		goto format_error;
+		//uint16_t	e_shentsize; -> format error/corrupt string table
 		//uint16_t	e_shnum; -> leads to format error
 	if (ehdr->e_shnum == 0)
 		goto format_error;
 	//uint16_t	e_shstrndx;  -> this is complex
+		/*
+			if shstrnxd = SHN_UNDEF error message is
+			nm: warning: file_name has a corrupt string table index - ignoring
+			nm: file_name: no symbols
+			same behaviour for broken shstrnxd but do not know how to check?
+		*/
 	if (ehdr->e_shstrndx == SHN_UNDEF)
 		return (fprintf(stderr, "nm: %s: file has a corrupt string table index\n", target), ERROR);
-	/*
-	if shstrnxd = SHN_UNDEF error message is
-		nm: warning: file_name has a corrupt string table index - ignoring
-		nm: file_name: no symbols
-	same behaviour for broken shstrnxd but do not know how to check?
-	*/
-
 	}
 	//if the file is 64bits
 	if (file->class == ELFCLASS64)
@@ -144,6 +145,9 @@ int	parse_ehdr(t_mem *file, struct stat *st, char *target)
 		//each section header should be readable so e_shnum * e_shentsize
 		//should not be bigger than the actual size of the header
 	}
+	//TODO: check for errors on shoff shnum shentsize.
+	//This can be a first check to see if the values are even possible
+	//then the rest can be checked when the section headers are actually accessed
 	return (0);
 	format_error:
 		return (fprintf(stderr, "nm: %s: file format not recognized\n", target), ERROR);
