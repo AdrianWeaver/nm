@@ -7,13 +7,14 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <elf.h>
+#include "libft.h"
 
 #define ERROR -1
 
 typedef struct s_mem
 {
-	uint8_t	*raw;
-	uint8_t	class;
+	Elf32_Addr	*elf32;
+	Elf64_Addr	*elf64;
 	uint8_t	endianness;
 } t_mem;
 
@@ -175,22 +176,22 @@ int main(int argc, char **argv)
 	struct	stat st;
 	t_mem	file;
 	int		ret;
+	char	**to_read;
 
 	ret = 0;
+	to_read = argv;
 	if (argc == 1)
 	{
-		//one file "a.out"
-		if (filehandler("a.out", &file, &st) == ERROR)
-			return (1);
-		if (file_routine(&file, &st, "a.out"))
-			ret++;
-		munmap(file.raw, st.st_size);
-		return (ret);
+
+		to_read = malloc(sizeof(*to_read) * 2);
+		to_read[0] = argv[0];
+		to_read[1] = ft_strdup("a.out");
+		argc++;
 	}
 	for (int i = 1; i < argc; i++)
 	{
 		//one file per loop "argv[i]"
-		if (filehandler(argv[i], &file, &st) == ERROR)
+		if (filehandler(to_read[i], &file, &st) == ERROR)
 		{
 			ret += 1;
 			continue;
@@ -198,6 +199,11 @@ int main(int argc, char **argv)
 		if (file_routine(&file, &st, "a.out"))
 			ret++;
 		munmap(file.raw, st.st_size);
+	}
+	if (to_read != argv)
+	{
+		free(to_read[1]);
+		free(to_read);
 	}
 	return (ret);
 }

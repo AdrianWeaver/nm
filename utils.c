@@ -326,16 +326,19 @@ void	print_64shdr(Elf64_Shdr *shdr, char *stringTable)
 	free(str_flags);
 }
 
+//TODO: Reimplement this part, this is a core function and needs
+//to be used everywhere I need to access the raw file.
 void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
 {
 	if (offset < 0)
 		return (NULL);
 	if (mem + offset + buffer > mem + max)
 		return (NULL);
-	else
-		return (mem + offset);
+	return (mem + offset);
 }
 
+//TODO: Reimplement this part, this is a core function and needs
+//to be used everywhere I need to access the raw file for strings
 char *protected_read_str(uint8_t *mem, size_t max, int offset)
 {
 	if (offset < 0)
