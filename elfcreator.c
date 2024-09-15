@@ -14,33 +14,41 @@
 # define MODIFIED_FILE "modified_elf"
 #endif
 
-
+#include <stdio.h>
 //main to explain segfaults
 int main(void)
 {
 	struct	stat st;
 	int		fd;
-	uint8_t	*mem;
+	void	*mem_head;
+	void	*mem;
 	int		ret;
 	int		to_write;
 
 	stat(INPUTFILE, &st);
 	to_write = st.st_size;
+	printf("to_write is: %d\n", to_write);
 	fd = open(INPUTFILE, O_RDONLY);
 	if (fd < 0)
 		return (fprintf(stderr, "the file %s does not exist\n", INPUTFILE), 1);
 	mem = mmap(NULL, st.st_size, PROT_WRITE | PROT_READ, MAP_PRIVATE, fd, 0);
+	mem_head = mem;
 	close(fd);
-	fd = open(MODIFIED_FILE, O_CREAT | O_RDWR, 0750);
+	fd = open(MODIFIED_FILE, O_CREAT | O_RDWR | O_TRUNC, st.st_mode);
+	if (fd < 0)
+		return (fprintf(stderr, "Something went wrong with open, aborting\n"), 1);
 	// modify below
 
-	((Elf64_Ehdr*) mem)->e_shoff = 0;
+	//((Elf64_Ehdr*) mem)->e_shoff = 0;
 	// modify above
-	while ((ret = write(fd, mem, to_write) > 0))
+	int i = 0;
+	while ((ret = write(fd, mem, to_write)) > 0)
 	{
+		printf("I looped %d times and wrote %d with to_write %d\n", i++, ret, to_write);
+		mem += ret;
 		to_write -= ret;
 	}
-	munmap(mem, st.st_size);
+	munmap(mem_head, st.st_size);
 	close(fd);
 	return (0);
 }
