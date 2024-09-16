@@ -16,8 +16,8 @@
 typedef struct s_mem
 {
 	uint8_t		*raw;
-	uint8_t		class;
-	uint8_t	endianness;
+	uint8_t		class; //ELFCLASS32 or ELFCLASS64
+	uint8_t	endianness; //ELFDATA2LSB or ELFDATA2MSB
 } t_mem;
 
 /*	@brief checking missing or forbidden files or directories
@@ -115,6 +115,7 @@ int	parse_ehdr(t_mem *file, struct stat *st, char *target)
 			//ElfN_Addr	e_entry;	-> not checked by nm
 		//ElfN_Off	e_phoff;		-> if too much, check alignment if out of bounds format error
 		//uint8_t	e_phnum;		-> cannot be greater than PN_XNUM, need to be checked
+		//TODO: create this check_Nprogramheader function
 	if (check_32programheader(file->raw, ehdr->e_phoff, ehdr->e_phnum) < 0)
 		goto format_error;
 		//ElfN_Off	e_shoff; 		-> triggers bfd errors
@@ -195,7 +196,7 @@ int main(int argc, char **argv)
 		//one file per loop "argv[i]"
 		if (filehandler(to_read[i], &file, &st) == ERROR)
 		{
-			ret += 1;
+			ret++;
 			continue;
 		}
 		if (file_routine(&file, &st, "a.out"))
