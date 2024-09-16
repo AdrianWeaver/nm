@@ -39,12 +39,10 @@ int main(void)
 		return (fprintf(stderr, "Something went wrong with open, aborting\n"), 1);
 	// modify below
 
-	//((Elf64_Ehdr*) mem)->e_shoff = 0;
+	((Elf64_Ehdr*) mem)->e_phoff = PN_XNUM + 1;
 	// modify above
-	int i = 0;
 	while ((ret = write(fd, mem, to_write)) > 0)
 	{
-		printf("I looped %d times and wrote %d with to_write %d\n", i++, ret, to_write);
 		mem += ret;
 		to_write -= ret;
 	}

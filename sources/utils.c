@@ -353,3 +353,29 @@ char *protected_read_str(uint8_t *mem, size_t max, int offset)
 	}
 	return (NULL);
 }
+
+/*	@brief check validity of phdr(s) in 32bits programs
+ *	@param raw the file mapped in memory
+ *	@param phoff the offset for the process header(s) found in ehdr
+ *	@param phnum the number of process header(s) found in ehdr
+ *
+ *	@return non-zero if error
+ */
+int	check_32programheader(uint8_t *raw, Elf32_Off phoff, uint8_t phnum)
+{
+	(void)raw;(void)phoff;(void)phnum;
+	return (0);
+}
+
+/*	@brief check validity of phdr(s) in 64bits programs
+ *	@param raw the file mapped in memory
+ *	@param phoff the offset for the process header(s) found in ehdr
+ *	@param phnum the number of process header(s) found in ehdr
+ *
+ *	@return non-zero if error
+ */
+int	check_64programheader(uint8_t *raw, Elf64_Off phoff, uint8_t phnum)
+{
+	(void)raw;(void)phoff;(void)phnum;
+	return (0);
+}

@@ -15,4 +15,7 @@ char	*get_shtype(Elf64_Shdr *shdr);
 void	print_64shdr(Elf64_Shdr *shdr, char *stringTable);
 t_list	*get64SymbolList(uint8_t *mem, struct stat *st, char *target);
 
+//utils
+int	check_32programheader(uint8_t *raw, Elf32_Off offset, uint8_t phnum);
+int	check_64programheader(uint8_t *raw, Elf64_Off offset, uint8_t phnum);
 #endif

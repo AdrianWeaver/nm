@@ -7,14 +7,16 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <elf.h>
+#include <stdlib.h>
 #include "libft.h"
+#include "ft_nm.h"
 
 #define ERROR -1
 
 typedef struct s_mem
 {
-	Elf32_Addr	*elf32;
-	Elf64_Addr	*elf64;
+	uint8_t		*raw;
+	uint8_t		class;
 	uint8_t	endianness;
 } t_mem;
 
@@ -109,29 +111,29 @@ int	parse_ehdr(t_mem *file, struct stat *st, char *target)
 		if (ehdr->e_type == ET_CORE)
 			goto format_error;
 		//uint16_t	e_machine (architecture) -> not checked by nm
-		//uint16_t	e_version (current or invalid) -> not checked by nm
-		//ElfN_Addr	e_entry;	-> not checked by nm
-		//ElfN_Off	e_phoff;	-> apparently only wrong if <0 file format error
-	if (ehdr->e_phoff < 0)
+			//uint16_t	e_version (current or invalid) -> not checked by nm
+			//ElfN_Addr	e_entry;	-> not checked by nm
+		//ElfN_Off	e_phoff;		-> if too much, check alignment if out of bounds format error
+		//uint8_t	e_phnum;		-> cannot be greater than PN_XNUM, need to be checked
+	if (check_32programheader(file->raw, ehdr->e_phoff, ehdr->e_phnum) < 0)
 		goto format_error;
-		//ElfN_Off	e_shoff; -> triggers bfd errors
-		//uint32_t	e_flags; -> not checked by nm
-		//uint16_t	e_ehsize; -> not checked by nm
-		//uint16_t	e_phentsize; -> not checked by nm
-		//uint16_t	e_phnum; -> checked by nm, weird behaviour if -1
-	if (ehdr->e_phnum < 0)
-		goto format_error;
-		//uint16_t	e_shentsize; -> format error/corrupt string table
-		//uint16_t	e_shnum; -> leads to format error
+		//ElfN_Off	e_shoff; 		-> triggers bfd errors
+			//uint32_t	e_flags; 	-> not checked by nm
+			//uint16_t	e_ehsize; 	-> not checked by nm
+			//uint16_t	e_phentsize; -> not checked by nm
+		//uint16_t	e_phnum; -> checked by nm, max value is PN_XNUM and behaviour changes if it's the case
+		//need to have a custom function check for this
+	//uint16_t	e_shentsize; -> format error/corrupt string table
+	//uint16_t	e_shnum; -> leads to format error
 	if (ehdr->e_shnum == 0)
 		goto format_error;
 	//uint16_t	e_shstrndx;  -> this is complex
-		/*
-			if shstrnxd = SHN_UNDEF error message is
-			nm: warning: file_name has a corrupt string table index - ignoring
-			nm: file_name: no symbols
-			same behaviour for broken shstrnxd but do not know how to check?
-		*/
+	/*
+		if shstrnxd = SHN_UNDEF error message is
+		nm: warning: file_name has a corrupt string table index - ignoring
+		nm: file_name: no symbols
+		same behaviour for broken shstrnxd but do not know how to check?
+	*/
 	if (ehdr->e_shstrndx == SHN_UNDEF)
 		return (fprintf(stderr, "nm: %s: file has a corrupt string table index\n", target), ERROR);
 	}
