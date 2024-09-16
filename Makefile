@@ -20,7 +20,7 @@ LIBFT	=   libft/libft.a
 
 all:	$(NAME)
 
-$(NAME):	$(OBJS)
+$(NAME):	$(OBJS) $(LIBFT)
 			$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
 
 $(OBJS_PATH)%.o:	%.c
