@@ -62,3 +62,8 @@ dkms.conf
 toto*
 forbidden
 modified_elf
+headcut
+partial
+truncated
+
+
