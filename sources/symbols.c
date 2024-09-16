@@ -20,20 +20,28 @@ Elf64_Shdr *getSymbolShdr(Elf64_Addr *mem, Elf64_Sym sym)
 	// undefined section
 		//and weak = w
 		//and weak and object
-	(void)shdr;	//no errors at compilation
-	(void)mem;	//no errors at compilation
-	(void)sym;	//no errors at compilation
+	(void)shdr; (void)mem; (void)sym;	//no errors at compilation
 	return (shdr);
 
 }
 
-char get64SymbolType(Elf64_Sym sym, Elf64_Shdr *shdr)
+char get32SymbolType(Elf32_Sym sym, Elf64_Shdr *shdr)
 {
-	(void) sym;		//no errors at compilation
-	(void) shdr;	//no errors at compilation
+	(void) sym;	(void) shdr;	//no errors at compilation
 	return ('z');
 }
 
+char get64SymbolType(Elf64_Sym sym, Elf64_Shdr *shdr)
+{
+	(void) sym;	(void) shdr;	//no errors at compilation
+	return ('z');
+}
+
+/* @brief prints the symbols given as a list.
+ *
+ * @param symList a t_list of symbols.
+ * @return void
+ */
 void	printSymbols(t_list *symList)
 {
 	int j = 0;
