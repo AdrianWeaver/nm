@@ -41,4 +41,9 @@ int	check_phdr_32lsb(t_mem *file, Elf32_Ehdr *ehdr);
 int	check_phdr_64msb(t_mem *file, Elf64_Ehdr *ehdr);
 int	check_phdr_32msb(t_mem *file, Elf32_Ehdr *ehdr);
 
+//reverse endianness
+
+uint16_t rev16(uint16_t origin);
+uint32_t rev32(uint32_t origin);
+uint64_t rev64(uint64_t origin);
 #endif
