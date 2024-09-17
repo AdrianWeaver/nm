@@ -65,6 +65,10 @@ int file_routine(t_mem *file, struct stat *st)
 {
 	if (check_ehdr(file, st) == ERROR)
 		return (ERROR);
+	if (check_phdr(file, st) == ERROR)
+		return (ERROR);
+	if (check_shdr(file, st) == ERROR)
+		return (ERROR);
 	return (0);
 }
 

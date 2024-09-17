@@ -88,30 +88,12 @@ int	check_ehdr_64lsb(t_mem *file, struct stat *st)
 	//check e_type only core files are errors
 	if (ehdr->e_type == ET_CORE)
 		goto format_error;
-	//uint16_t	e_machine (architecture) -> not checked by nm
-	//uint16_t	e_version (current or invalid) -> not checked by nm
-	//check if the header table is not too big for the file
+	//check if the program header table is not too big for the file
 	if ((uint8_t)(ehdr->e_phoff + (ehdr->e_phnum * ehdr->e_phentsize)) > st->st_size)
 		goto format_error;
-	//CHECK PROGRAM HEADER TABLE
-	if (check_phdr_64lsb(file, ehdr) < 0)
-		return (ERROR);
-	//ElfN_Off	e_shoff; 		-> triggers bfd errors
-		//uint32_t	e_flags; 	-> not checked by nm
-		//uint16_t	e_ehsize; 	-> not checked by nm
-		//uint16_t	e_phentsize; -> not checked by nm
-	//need to have a custom function check for this
-	//uint16_t	e_shentsize; -> format error/corrupt string table
-	//uint16_t	e_shnum; -> leads to format error
-	if (ehdr->e_shnum == 0)
+	//check if the section header table is not too big for the file
+	if ((uint8_t)(ehdr->e_shoff + (ehdr->e_shnum * ehdr->e_shentsize)) > st->st_size)
 		goto format_error;
-	//uint16_t	e_shstrndx;  -> this is complex
-	/*
-		if shstrnxd = SHN_UNDEF error message is
-		nm: warning: file_name has a corrupt string table index - ignoring
-		nm: file_name: no symbols
-		same behaviour for broken shstrnxd but do not know how to check?
-	*/
 	if (ehdr->e_shstrndx == SHN_UNDEF)
 		return (fprintf(stderr, "nm: %s: file has a corrupt string table index\n", file->name), ERROR);
 	format_error:
