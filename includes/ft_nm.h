@@ -13,6 +13,7 @@ typedef struct s_mem
 	uint8_t		*raw;
 	uint8_t		class;		//ELFCLASS32 or ELFCLASS64
 	uint8_t		endianness;	//ELFDATA2LSB or ELFDATA2MSB
+	uint64_t	size;
 } t_mem;
 
 typedef struct s_symbol {
@@ -22,24 +23,29 @@ typedef struct s_symbol {
 } t_symbol;
 
 uint8_t	*handleFile(char *target, int *fd, struct stat *st);
-
-//utils
-int	check_32programheader(uint8_t *raw, Elf32_Off offset, uint8_t phnum);
-int	check_64programheader(uint8_t *raw, Elf64_Off offset, uint8_t phnum);
+int file_routine(t_mem *file);
 
 //check ehdr
+int	check_ehdr(t_mem *file);
 int	e_ident_checker(t_mem *file);
-int	check_ehdr(t_mem *file, struct stat *st);
-int	check_ehdr_64lsb(t_mem *file, struct stat *st);
-int	check_ehdr_32lsb(t_mem *file, struct stat *st);
-int	check_ehdr_64msb(t_mem *file, struct stat *st);
-int	check_ehdr_32msb(t_mem *file, struct stat *st);
+int	check_ehdr_64lsb(t_mem *file);
+int	check_ehdr_32lsb(t_mem *file);
+int	check_ehdr_64msb(t_mem *file);
+int	check_ehdr_32msb(t_mem *file);
 
 //check phdr
-int	check_phdr_64lsb(t_mem *file, Elf64_Ehdr *ehdr);
-int	check_phdr_32lsb(t_mem *file, Elf32_Ehdr *ehdr);
-int	check_phdr_64msb(t_mem *file, Elf64_Ehdr *ehdr);
-int	check_phdr_32msb(t_mem *file, Elf32_Ehdr *ehdr);
+int	check_phdr(t_mem *file);
+int	check_phdr_64lsb(t_mem *file);
+int	check_phdr_32lsb(t_mem *file);
+int	check_phdr_64msb(t_mem *file);
+int	check_phdr_32msb(t_mem *file);
+
+//check shdr
+int	check_shdr(t_mem *file);
+int	check_shdr_64lsb(t_mem *file);
+int	check_shdr_32lsb(t_mem *file);
+int	check_shdr_64msb(t_mem *file);
+int	check_shdr_32msb(t_mem *file);
 
 //reverse endianness
 

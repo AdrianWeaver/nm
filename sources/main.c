@@ -61,13 +61,13 @@ int filehandler(t_mem *file, struct stat *st)
  *
  * @return non-zero in case of error
  */
-int file_routine(t_mem *file, struct stat *st)
+int file_routine(t_mem *file)
 {
-	if (check_ehdr(file, st) == ERROR)
+	if (check_ehdr(file) == ERROR)
 		return (ERROR);
-	if (check_phdr(file, st) == ERROR)
+	if (check_phdr(file) == ERROR)
 		return (ERROR);
-	if (check_shdr(file, st) == ERROR)
+	if (check_shdr(file) == ERROR)
 		return (ERROR);
 	return (0);
 }
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 			ret++;
 			continue;
 		}
-		if (file_routine(&file, &st))
+		if (file_routine(&file))
 			ret++;
 		munmap(file.raw, st.st_size);
 	}
