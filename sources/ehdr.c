@@ -13,11 +13,11 @@
 
 #define ERROR -1
 
-/*	@brief checking missing or forbidden files or directories
+/*	@brief making sure the file is an ELF
+ *	populating the t_mem* with class and endianness
  *
- * @param filename the name of the file to be read
- * @param st an address to store the file stats in case of success
- * @return non-zero in case of errors (writing on stderr)
+ * @param file a t_mem*	with a raw pointer on the file mapped in memory 
+ * @return non-zero if not an ELF
  */
 int	e_ident_checker(t_mem *file)
 {
