@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -49,6 +48,9 @@ int	e_ident_checker(t_mem *file)
  */
 int	check_ehdr(t_mem *file, struct stat *st)
 {
+	//checking ident and filling t_mem struct with infos
+	if (e_ident_checker(file) == ERROR)
+		return (ERROR);
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
 		if (check_ehdr_64lsb(file, st) != ERROR)

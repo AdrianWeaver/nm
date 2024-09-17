@@ -63,9 +63,8 @@ int filehandler(t_mem *file, struct stat *st)
  */
 int file_routine(t_mem *file, struct stat *st)
 {
-	if (e_ident_checker(file) == ERROR)
+	if (check_ehdr(file, st) == ERROR)
 		return (ERROR);
-	check_ehdr(file, st);
 	return (0);
 }
 
