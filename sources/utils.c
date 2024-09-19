@@ -10,29 +10,52 @@
 #include "libftprintf.h"
 #include "ft_nm.h"
 
-//TODO: Reimplement this part, this is a core function and needs
-//to be used everywhere I need to access the raw file.
-void *protected_read(uint8_t *mem, size_t max, int offset, size_t buffer)
+/*	@brief reads a buffersize at addr and confirms that every byte read 
+ *	is within the mapped file.
+ *
+ *	@param t_mem *file the file structure with infos
+ *	@param addr the address to attempt to read
+ *	@param buffersize the amount of bytes to be read
+ *	@return NULL in case of error, address of offset if succeeded
+*/
+void *protected_read(uint8_t *mem, uint8_t addr, uint8_t buffersize)
 {
-	if (offset < 0)
-		return (NULL);
-	if (mem + offset + buffer > mem + max)
+	if (addr < mem->raw)
+		return (NULL)
+	if (addr + buffersize > mem->raw + mem->size)
 		return (NULL);
 	return (mem + offset);
 }
 
-//TODO: Reimplement this part, this is a core function and needs
-//to be used everywhere I need to access the raw file for strings
-char *protected_read_str(uint8_t *mem, size_t max, int offset)
+/*	@brief attemps to read a string at addr and confirms every byte read is 
+ *	within the mapped file, also confirms that the string is null terminated
+ *
+ *	@param t_mem *file the file structure with infos
+ *	@param addr the address to attempt to read
+ *	@param buffersize the amount of bytes to be read
+ *	@return NULL in case of error, address of offset if succeeded
+*/
+char *protected_read_str(uint8_t *mem, uint8_t addr)
 {
-	if (offset < 0)
+	if (addr < mem->raw)
 		return (NULL);
-	if (mem + offset < mem + max)
+	void *saved = addr;
+	if (mem->endianness == ELFDATA2LSB)
 	{
-		for (size_t i = 0; mem + i < mem + max; i++)
+		while (addr < mem->raw + mem->size)
 		{
-			if (mem[i] == '\0')
-				return ((char *)mem + offset);
+			if (*addr == '\0')
+				return ((char *)saved);
+			addr++;
+		}
+	}
+	if (mem->endianness == ELFDATA2MSB)
+	{
+		while (addr > mem->raw)
+		{
+			if (*addr == '\0')
+				return ((char *)saved);
+			addr--;
 		}
 	}
 	return (NULL);
