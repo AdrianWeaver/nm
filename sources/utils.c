@@ -18,13 +18,13 @@
  *	@param buffersize the amount of bytes to be read
  *	@return NULL in case of error, address of offset if succeeded
 */
-void *protected_read(uint8_t *mem, uint8_t addr, uint8_t buffersize)
+void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffersize)
 {
 	if (addr < mem->raw)
-		return (NULL)
+		return (NULL);
 	if (addr + buffersize > mem->raw + mem->size)
 		return (NULL);
-	return (mem + offset);
+	return ((void *)addr);
 }
 
 /*	@brief attemps to read a string at addr and confirms every byte read is 
@@ -35,27 +35,28 @@ void *protected_read(uint8_t *mem, uint8_t addr, uint8_t buffersize)
  *	@param buffersize the amount of bytes to be read
  *	@return NULL in case of error, address of offset if succeeded
 */
-char *protected_read_str(uint8_t *mem, uint8_t addr)
+const char *protected_read_str(const t_mem *mem, const char *addr)
 {
-	if (addr < mem->raw)
+	uint8_t i = 0;
+
+	if (addr < (char *)mem->raw)
 		return (NULL);
-	void *saved = addr;
 	if (mem->endianness == ELFDATA2LSB)
 	{
-		while (addr < mem->raw + mem->size)
+		while ((addr + i) < (char *)(mem->raw + mem->size))
 		{
-			if (*addr == '\0')
-				return ((char *)saved);
-			addr++;
+			if (*(addr + i) == '\0')
+				return (addr);
+			i++;
 		}
 	}
 	if (mem->endianness == ELFDATA2MSB)
 	{
-		while (addr > mem->raw)
+		while ((addr - i) > (char *)(mem->raw))
 		{
-			if (*addr == '\0')
-				return ((char *)saved);
-			addr--;
+			if (*(addr - i) == '\0')
+				return (addr);
+			i++;
 		}
 	}
 	return (NULL);

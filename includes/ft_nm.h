@@ -25,6 +25,10 @@ typedef struct s_symbol {
 uint8_t	*handleFile(char *target, int *fd, struct stat *st);
 int file_routine(t_mem *file);
 
+//read protections
+void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffersize);
+const char *protected_read_str(const t_mem *mem, const char *addr);
+
 //check ehdr
 int	check_ehdr(t_mem *file);
 int	e_ident_checker(t_mem *file);

@@ -72,7 +72,7 @@ int	check_ehdr(t_mem *file)
 	return (ERROR);
 }
 
-/*	@brief check ehdr for 64 little endian
+/*	@brief check ehdr for a 64 little endian file
  *
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
@@ -96,7 +96,7 @@ int	check_ehdr_64lsb(t_mem *file)
 	return (0);
 }
 
-/*	@brief check ehdr for 64 little endian
+/*	@brief check ehdr for a 32 little endian file
  *
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
@@ -106,7 +106,7 @@ int	check_ehdr_32lsb(t_mem *file)
 	(void)file; //no compilation errors
 	return (0);
 }
-/*	@brief check ehdr for 64 little endian
+/*	@brief check ehdr for a 64 big endian file
  *
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
@@ -117,7 +117,7 @@ int	check_ehdr_64msb(t_mem *file)
 	return (0);
 }
 
-/* 	@brief check ehdr for 64 little endian
+/* 	@brief check ehdr for 32 big endian file
  *
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
