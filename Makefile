@@ -8,7 +8,8 @@ SRCS_PATH	= ./sources/
 SRCS	=	main.c\
 			utils.c\
 			ehdr.c\
-			phdr.c
+			phdr.c\
+			shdr.c
 			#symbols.c
 
 OBJS_PATH	= ./objects/

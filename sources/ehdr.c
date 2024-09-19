@@ -21,7 +21,7 @@
 */
 int	e_ident_checker(t_mem *file)
 {
-	uint8_t	*e_ident = ((Elf32_Ehdr *)file->raw)->e_ident;
+	const uint8_t	*e_ident = ((Elf32_Ehdr *)file->raw)->e_ident;
 
 	if (e_ident[EI_MAG0] != 0x7f || e_ident[EI_MAG1] != 'E'
 		|| e_ident[EI_MAG2] != 'L' || e_ident[EI_MAG3] != 'F')
@@ -77,7 +77,7 @@ int	check_ehdr(t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_64lsb(t_mem *file)
+int	check_ehdr_64lsb(const t_mem *file)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) &file->raw;
 	//check e_type only core files are errors
@@ -101,7 +101,7 @@ int	check_ehdr_64lsb(t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_32lsb(t_mem *file)
+int	check_ehdr_32lsb(const t_mem *file)
 {
 	(void)file; //no compilation errors
 	return (0);
@@ -111,7 +111,7 @@ int	check_ehdr_32lsb(t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_64msb(t_mem *file)
+int	check_ehdr_64msb(const t_mem *file)
 {
 	(void)file; //no compilation errors
 	return (0);
@@ -122,7 +122,7 @@ int	check_ehdr_64msb(t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_32msb(t_mem *file)
+int	check_ehdr_32msb(const t_mem *file)
 {
 	(void)file; //no compilation errors
 	return (0);

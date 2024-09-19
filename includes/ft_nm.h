@@ -32,24 +32,24 @@ const char *protected_read_str(const t_mem *mem, const char *addr);
 //check ehdr
 int	check_ehdr(t_mem *file);
 int	e_ident_checker(t_mem *file);
-int	check_ehdr_64lsb(t_mem *file);
-int	check_ehdr_32lsb(t_mem *file);
-int	check_ehdr_64msb(t_mem *file);
-int	check_ehdr_32msb(t_mem *file);
+int	check_ehdr_64lsb(const t_mem *file);
+int	check_ehdr_32lsb(const t_mem *file);
+int	check_ehdr_64msb(const t_mem *file);
+int	check_ehdr_32msb(const t_mem *file);
 
 //check phdr
-int	check_phdr(t_mem *file);
-int	check_phdr_64lsb(t_mem *file);
-int	check_phdr_32lsb(t_mem *file);
-int	check_phdr_64msb(t_mem *file);
-int	check_phdr_32msb(t_mem *file);
+int	check_phdr(const t_mem *file);
+int	check_phdr_64lsb(const t_mem *file);
+int	check_phdr_32lsb(const t_mem *file);
+int	check_phdr_64msb(const t_mem *file);
+int	check_phdr_32msb(const t_mem *file);
 
 //check shdr
-int	check_shdr(t_mem *file);
-int	check_shdr_64lsb(t_mem *file);
-int	check_shdr_32lsb(t_mem *file);
-int	check_shdr_64msb(t_mem *file);
-int	check_shdr_32msb(t_mem *file);
+int	check_shdr(const t_mem *file);
+int	check_shdr_64lsb(const t_mem *file);
+int	check_shdr_32lsb(const t_mem *file);
+int	check_shdr_64msb(const t_mem *file);
+int	check_shdr_32msb(const t_mem *file);
 
 //reverse endianness
 
