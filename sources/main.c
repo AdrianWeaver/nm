@@ -45,12 +45,13 @@ int filehandler(t_mem *file, struct stat *st)
 		return (ERROR);
 	if ((fd = open(file->name, O_RDONLY)) < 0)
 		return (ERROR);
-	close(fd);
 	if ((file->raw = mmap(NULL, st->st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
-		return (ERROR);
+		return (close(fd), ERROR);
 	//the file is too short to even have an ehdr
+	close(fd);
 	if (st->st_size < (int) sizeof(Elf64_Ehdr))
 		return(fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
+	file->size = st->st_size;
 	return (0);
 }
 
