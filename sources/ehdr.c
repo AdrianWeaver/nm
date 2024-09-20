@@ -79,7 +79,7 @@ int	check_ehdr(t_mem *file)
 */
 int	check_ehdr_64lsb(const t_mem *file)
 {
-	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) &file->raw;
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) file->raw;
 	//check e_type only core files are errors
 	if (ehdr->e_type == ET_CORE)
 		goto format_error;
@@ -89,11 +89,16 @@ int	check_ehdr_64lsb(const t_mem *file)
 	//check if the section header table is not too big for the file
 	if ((uint8_t)(ehdr->e_shoff + (ehdr->e_shnum * ehdr->e_shentsize)) > file->size)
 		goto format_error;
-	if (ehdr->e_shstrndx == SHN_UNDEF)
-		return (fprintf(stderr, "nm: %s: file has a corrupt string table index\n", file->name), ERROR);
+	//check for string table
+	if (ehdr->e_shstrndx == SHN_UNDEF || ehdr->e_shstrndx > ehdr->e_shnum)
+	{
+		fprintf(stderr, "nm: warning: %s: file has a corrupt string table index - ignoring\n", file->name);
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
+		return (ERROR);
+	}
+	return (0);
 	format_error:
 		return (fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
-	return (0);
 }
 
 /*	@brief check ehdr for a 32 little endian file
