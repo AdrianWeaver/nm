@@ -18,7 +18,7 @@ DEPS	= 	$(OBJS:.o=.d)
 
 
 CFLAGS = -Wall -Wextra -Werror
-CPPFLAGS = -MMD -c
+CPPFLAGS = -MMD -c -g3
 
 
 LIBFT	=   libft/libft.a
@@ -50,10 +50,12 @@ re:			fclean
 			$(MAKE) all
 
 test:		$(NAME)
-			./$(NAME) $(NAME)
+			./$(NAME) modified_elf
+			#./$(NAME) $(NAME)
 
 vtest:		$(NAME)
-			valgrind --leak-check=full ./$(NAME) $(NAME)
+			#valgrind --leak-check=full ./$(NAME) $(NAME)
+			valgrind --leak-check=full ./$(NAME) modified_elf
 
 create:		
 			$(CC) $(CFLAGS) elfcreator.c -o ELFcreator

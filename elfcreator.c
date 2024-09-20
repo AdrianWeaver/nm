@@ -38,8 +38,14 @@ int main(void)
 	if (fd < 0)
 		return (fprintf(stderr, "Something went wrong with open, aborting\n"), 1);
 	// modify below
-
-	((Elf64_Ehdr*) mem)->e_phoff = PN_XNUM + 1;
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr*)mem;
+	Elf64_Shdr *shdr_tab = (Elf64_Shdr *)(mem + ehdr->e_shoff);
+	for (int i = 0; i < ehdr->e_shnum; i++)
+	{
+		Elf64_Shdr *shdr = &shdr_tab[i];
+		printf("size = %lu\n", shdr->sh_size);
+		shdr->sh_entsize += 1;
+	}
 	// modify above
 	while ((ret = write(fd, mem, to_write)) > 0)
 	{
