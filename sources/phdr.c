@@ -11,22 +11,22 @@ int	check_phdr(const t_mem *file)
 {
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
-		if (check_phdr_64lsb(file) != ERROR)
+		if (_check_phdr_64lsb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2LSB)
 	{
-		if (check_phdr_32lsb(file) != ERROR)
+		if (_check_phdr_32lsb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2MSB)
 	{
-		if (check_phdr_64msb(file) != ERROR)
+		if (_check_phdr_64msb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2MSB)
 	{
-		if (check_phdr_32msb(file) != ERROR)
+		if (_check_phdr_32msb(file) != ERROR)
 			return (0);
 	}
 	return (ERROR);
@@ -39,7 +39,7 @@ int	check_phdr(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of errors (writing on stderr)
 */
-int	check_phdr_64lsb(const t_mem *file)
+int	_check_phdr_64lsb(const t_mem *file)
 {
 	int					unique_phdr = 0;
 	int					unique_interp = 0;
@@ -79,7 +79,7 @@ int	check_phdr_64lsb(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of errors (writing on stderr)
 */
-int	check_phdr_32lsb(const t_mem *file)
+int	_check_phdr_32lsb(const t_mem *file)
 {
 	(void)file;return (0); //no compilation errors
 }
@@ -92,7 +92,7 @@ int	check_phdr_32lsb(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of errors (writing on stderr)
 */
-int	check_phdr_64msb(const t_mem *file)
+int	_check_phdr_64msb(const t_mem *file)
 {
 	//TODO: do this function.
 	(void)file;
@@ -106,7 +106,7 @@ int	check_phdr_64msb(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of errors (writing on stderr)
 */
-int	check_phdr_32msb(const t_mem *file)
+int	_check_phdr_32msb(const t_mem *file)
 {
 	//TODO: do this function
 	(void)file;

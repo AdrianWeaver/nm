@@ -29,8 +29,9 @@ typedef struct s_symbol {
 //defined values for option parsing
 enum OptionReturns {
 	NOTANOPTION,
-	SUCCESS,
-	HELP,
+	OPTION_SUCCESS,
+	OPTION_HELP,
+	OPTION_ERROR,
 };
 
 enum OptionParser {
@@ -52,35 +53,36 @@ const char *protected_read_str(const t_mem *mem, const char *addr);
 //check ehdr
 int	check_ehdr(t_mem *file);
 int	e_ident_checker(t_mem *file);
-int	check_ehdr_64lsb(const t_mem *file);
-int	check_ehdr_32lsb(const t_mem *file);
-int	check_ehdr_64msb(const t_mem *file);
-int	check_ehdr_32msb(const t_mem *file);
+int	_check_ehdr_64lsb(const t_mem *file);
+int	_check_ehdr_32lsb(const t_mem *file);
+int	_check_ehdr_64msb(const t_mem *file);
+int	_check_ehdr_32msb(const t_mem *file);
 
 //check phdr
 int	check_phdr(const t_mem *file);
-int	check_phdr_64lsb(const t_mem *file);
-int	check_phdr_32lsb(const t_mem *file);
-int	check_phdr_64msb(const t_mem *file);
-int	check_phdr_32msb(const t_mem *file);
+int	_check_phdr_64lsb(const t_mem *file);
+int	_check_phdr_32lsb(const t_mem *file);
+int	_check_phdr_64msb(const t_mem *file);
+int	_check_phdr_32msb(const t_mem *file);
 
 //check shdr
 int	check_shdr(const t_mem *file);
-int	check_shdr_64lsb(const t_mem *file);
-int	check_shdr_32lsb(const t_mem *file);
-int	check_shdr_64msb(const t_mem *file);
-int	check_shdr_32msb(const t_mem *file);
+int	_check_shdr_64lsb(const t_mem *file);
+int	_check_shdr_32lsb(const t_mem *file);
+int	_check_shdr_64msb(const t_mem *file);
+int	_check_shdr_32msb(const t_mem *file);
 
 //symbols
 int	get_symbols(t_mem *file, uint8_t optionField);
-int	get_symbols_64lsb(t_mem *file, uint8_t optionField);
-int	get_symbols_32lsb(t_mem *file, uint8_t optionField);
-int	get_symbols_64msb(t_mem *file, uint8_t optionField);
-int	get_symbols_32msb(t_mem *file, uint8_t optionField);
+int	_get_symbols_64lsb(t_mem *file, uint8_t optionField);
+int	_get_symbols_32lsb(t_mem *file, uint8_t optionField);
+int	_get_symbols_64msb(t_mem *file, uint8_t optionField);
+int	_get_symbols_32msb(t_mem *file, uint8_t optionField);
 
 //options
-int		getOptions(char *input, uint8_t *optionField);
-void	printUsage(char invalidOption);
+int		get_options_and_file_list(int argc, char **argv, char ***files, uint8_t *bitfield);
+void	_get_options(char *input, uint8_t *optionField);
+void	_printUsage(char invalidOption);
 
 //reverse endianness
 uint16_t	rev16(uint16_t origin);

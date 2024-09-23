@@ -51,22 +51,22 @@ int	check_ehdr(t_mem *file)
 		return (ERROR);
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
-		if (check_ehdr_64lsb(file) != ERROR)
+		if (_check_ehdr_64lsb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2LSB)
 	{
-		if (check_ehdr_32lsb(file) != ERROR)
+		if (_check_ehdr_32lsb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2MSB)
 	{
-		if (check_ehdr_64msb(file) != ERROR)
+		if (_check_ehdr_64msb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2MSB)
 	{
-		if (check_ehdr_32msb(file) != ERROR)
+		if (_check_ehdr_32msb(file) != ERROR)
 			return (0);
 	}
 	return (ERROR);
@@ -77,7 +77,7 @@ int	check_ehdr(t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_64lsb(const t_mem *file)
+int	_check_ehdr_64lsb(const t_mem *file)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) file->raw;
 	//check e_type only core files are errors
@@ -106,7 +106,7 @@ int	check_ehdr_64lsb(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_32lsb(const t_mem *file)
+int	_check_ehdr_32lsb(const t_mem *file)
 {
 	(void)file; //no compilation errors
 	return (0);
@@ -116,7 +116,7 @@ int	check_ehdr_32lsb(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_64msb(const t_mem *file)
+int	_check_ehdr_64msb(const t_mem *file)
 {
 	(void)file; //no compilation errors
 	return (0);
@@ -127,7 +127,7 @@ int	check_ehdr_64msb(const t_mem *file)
  *	@param file t_mem storing mapped file and infos
  *	@return non-zero in case of error
 */
-int	check_ehdr_32msb(const t_mem *file)
+int	_check_ehdr_32msb(const t_mem *file)
 {
 	(void)file; //no compilation errors
 	return (0);

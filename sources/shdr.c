@@ -31,34 +31,34 @@ int	check_shdr(const t_mem *file)
 	printf("DEBUG: check shdr\n");
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
-		if (check_shdr_64lsb(file) != ERROR)
+		if (_check_shdr_64lsb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2LSB)
 	{
-		if (check_shdr_32lsb(file) != ERROR)
+		if (_check_shdr_32lsb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2MSB)
 	{
-		if (check_shdr_64msb(file) != ERROR)
+		if (_check_shdr_64msb(file) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2MSB)
 	{
-		if (check_shdr_32msb(file) != ERROR)
+		if (_check_shdr_32msb(file) != ERROR)
 			return (0);
 	}
 	return (ERROR);
 }
 
 /*
- *	@brief
+ *	@brief	check validity of shdr table
  *
- *	@param
- *	@return
+ *	@param file t_mem storing mapped file and infos
+ *	@return non-zero in case of error in shdr table
 */
-int	check_shdr_64lsb(const t_mem *file)
+int	_check_shdr_64lsb(const t_mem *file)
 {
 	bool				section_too_long = false;
 	const Elf64_Ehdr	*ehdr = (Elf64_Ehdr *)file->raw;
@@ -68,6 +68,8 @@ int	check_shdr_64lsb(const t_mem *file)
 	for (int i = 0; i < ehdr->e_shnum; i++)
 	{
 		const Elf64_Shdr shdr = shdr_table[i];
+		//types will be checked laster. error is as follow
+		//nm: %file: unknown type [0xval] section `.sectionname'\n then continuing on nm
 		if (shdr.sh_type == SHT_NULL)
 			continue;
 		//check size of sections
@@ -91,7 +93,7 @@ int	check_shdr_64lsb(const t_mem *file)
  *	@param
  *	@return
 */
-int	check_shdr_32lsb(const t_mem *file)
+int	_check_shdr_32lsb(const t_mem *file)
 {
 	(void)file;
 	return (0);
@@ -103,7 +105,7 @@ int	check_shdr_32lsb(const t_mem *file)
  *	@param
  *	@return
 */
-int	check_shdr_64msb(const t_mem *file)
+int	_check_shdr_64msb(const t_mem *file)
 {
 	(void)file;
 	return (0);
@@ -115,7 +117,7 @@ int	check_shdr_64msb(const t_mem *file)
  *	@param
  *	@return
 */
-int	check_shdr_32msb(const t_mem *file)
+int	_check_shdr_32msb(const t_mem *file)
 {
 	(void)file;
 	return (0);

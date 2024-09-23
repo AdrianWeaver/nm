@@ -13,28 +13,28 @@ int	get_symbols(t_mem *file, uint8_t optionField)
 	printf("DEBUG: check shdr\n");
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
-		if (get_symbols_64lsb(file, optionField) != ERROR)
+		if (_get_symbols_64lsb(file, optionField) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2LSB)
 	{
-		if (get_symbols_32lsb(file, optionField) != ERROR)
+		if (_get_symbols_32lsb(file, optionField) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2MSB)
 	{
-		if (get_symbols_64msb(file, optionField) != ERROR)
+		if (_get_symbols_64msb(file, optionField) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2MSB)
 	{
-		if (get_symbols_32msb(file, optionField) != ERROR)
+		if (_get_symbols_32msb(file, optionField) != ERROR)
 			return (0);
 	}
 	return (ERROR);
 }
 
-int	get_symbols_64lsb(t_mem *file, uint8_t optionField)
+int	_get_symbols_64lsb(t_mem *file, uint8_t optionField)
 {
 	//get shdr_table
 	//get symtab
@@ -43,17 +43,17 @@ int	get_symbols_64lsb(t_mem *file, uint8_t optionField)
 	(void)file; (void)optionField; return (0); //no compilation error
 }
 
-int	get_symbols_32lsb(t_mem *file, uint8_t optionField)
+int	_get_symbols_32lsb(t_mem *file, uint8_t optionField)
 {
 	(void)file; (void)optionField; return (0); //no compilation error
 }
 
-int	get_symbols_64msb(t_mem *file, uint8_t optionField)
+int	_get_symbols_64msb(t_mem *file, uint8_t optionField)
 {
 	(void)file; (void)optionField; return (0); //no compilation error
 }
 
-int	get_symbols_32msb(t_mem *file, uint8_t optionField)
+int	_get_symbols_32msb(t_mem *file, uint8_t optionField)
 {
 	(void)file; (void)optionField; return (0); //no compilation error
 }

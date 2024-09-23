@@ -1,69 +1,91 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include "libft.h"
 #include "ft_nm.h"
 
-/*	@brief fils a uint8_t bitfield for activated options
- *	used to parse the inputs.
+/*	@brief parse argc/argv stores filenames in char **, options in bitfield
  *
- *	@param input a word to parse
- *	@param optionField the address of a bitfield used to store options
- *	@return 0 if the word can be a file, non-zero otherwise
- *	@retval ERROR if option does not exist, prints usage doc
- *	@retval NOTANOPTION if the word is not an option and can be a file
- *	@retval HELP if the -h was asked
- *	@retval SUCCESS if the option is allowed and registered
+ *	@param argc
+ *	@param argv
+ *	@param to_read char** to store filename(s) to be read
+ *	@param option_field bitfield to store options as flags
+ *
+ *	@return number of files to be read
 */
-int getOptions(char *input, uint8_t *optionField)
+int get_options_and_file_list(int argc, char **argv, char ***files, uint8_t *option_field)
 {
-	if (input == NULL)
-		return (ERROR);
-	for (int i = 0; i != '\0'; i++)
+	int file_number = 0;
+	if (argc == 1)
 	{
-		if (i == 0 && input[i] != '-')
-			return (NOTANOPTION);
+		*files = malloc(sizeof(*files) * 1);
+		if (!*files)
+			exit(1);
+		(*files)[0] = ft_strdup("a.out");
+		return (1);
+	}
+	for (int i = 1; i < argc; i++)
+	{
+		if (*(argv[i]) != '-')
+		{
+			argv[file_number] = argv[i];
+			file_number++;
+			continue;
+		}
+		if (*(argv[i]) != '\0')
+			_get_options(argv[i], option_field);
+	}
+	return (file_number);
+}
+
+void	_get_options(char *input, uint8_t *option_field)
+{
+	for (int i = 1; input[i] != '\0'; i++)
+	{
 		switch (input[i])
 		{
 			case 'a':
-				*optionField |= (1 << OPTION_A);
+				*option_field |= (1 << OPTION_A);
 				break;
 			case 'g':
-				*optionField |= (1 << OPTION_G);
+				*option_field |= (1 << OPTION_G);
 				break;
 			case 'u':
-				*optionField |= (1 << OPTION_U);
+				*option_field |= (1 << OPTION_U);
 				break;
 			case 'r':
-				*optionField |= (1 << OPTION_R);
+				*option_field |= (1 << OPTION_R);
 				break;
 			case 'p':
-				*optionField |= (1 << OPTION_P);
+				*option_field |= (1 << OPTION_P);
 				break;
 			case 'h':
-				*optionField |= (1 << OPTION_H);
-				printUsage('h');
-				return (HELP);
-				break;
+				*option_field |= (1 << OPTION_H);
+				_printUsage('h');
+				exit(0);;
 			default:
-				printUsage(input[i]);
-				return (ERROR);
+				_printUsage(input[i]);
+				exit(1);
 		}
 	}
-	return (SUCCESS);
+	return ;
 }
 
-void	printUsage(char invalidOption)
+void	_printUsage(char invalidOption)
 {
-	fprintf(stderr, "%s '%c'\n%s%s%s%s%s%s%s%s%s\n",
-		(invalidOption == 'h') ? "" : "nm: invalid option --",
-		invalidOption,
+	if (invalidOption != 'h')
+	{
+		fprintf(stderr, "nm: invalid option -- '%c'\n", invalidOption);
+	}
+	fprintf(stderr, "%s%s%s%s%s%s%s%s%s\n",
 		"Usage: nm [option(s)] [file(s)]\n",
-		"\tList symbols in [file(s)] (a.out by default).\n",
-		"\tThe options are:\n",
-		"-h\tDisplay this help\n"
-		"-a\tDisplay debugger-only symbols\n",
-		"-g\tDisplay all symbols even debugger-only symbols\n",
-		"-u\tDisplay only undefined symbols\n",
-		"-r\tReverse the sense of the sort\n",
-		"-p\tDo not sort the symbols\n",
+		" List symbols in [file(s)] (a.out by default).\n",
+		"  The options are:\n",
+		"  -h Display this help\n"
+		"  -a Display debugger-only symbols\n",
+		"  -g Display all symbols even debugger-only symbols\n",
+		"  -u Display only undefined symbols\n",
+		"  -r Reverse the sense of the sort\n",
+		"  -p Do not sort the symbols\n",
 		"nm: supported targets: elf64-x86-64 elf32-x86-64"
 	);
 }

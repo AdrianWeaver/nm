@@ -37,7 +37,7 @@ int	check_file_stat(char *filename, struct stat *st)
  * @param file t_mem address to store mapped file obtained and infos
  * @return non-zero in case of error (without printing)
 */
-int filehandler(t_mem *file, struct stat *st)
+int file_handler(t_mem *file, struct stat *st)
 {
 	int fd;
 
@@ -62,7 +62,7 @@ int filehandler(t_mem *file, struct stat *st)
  *
  * @return non-zero in case of error
  */
-int file_routine(t_mem *file)
+int file_routine(t_mem *file, uint8_t optionField)
 {
 	if (check_ehdr(file) == ERROR)
 		return (ERROR);
@@ -70,43 +70,44 @@ int file_routine(t_mem *file)
 		return (ERROR);
 	if (check_shdr(file) == ERROR)
 		return (ERROR);
+	if (get_symbols(file, optionField) == ERROR)
+		return (ERROR);
 	return (0);
 }
 
+//options:
+// -a : display all symbols even debugger-only symbols
+// -g : display only external symbols
+// -u : display only undefined symbols (external to each object file)
+// -r : reverse sort
+// -p : no-sort
 int main(int argc, char **argv)
 {
-	struct	stat st;
-	t_mem	file;
-	int		ret;
-	char	**to_read;
+	int		ret = 0;
+	char	**files = argv;
+	int		file_number;
+	uint8_t	option_field = 0;
 
-	ret = 0;
-	to_read = argv;
-	if (argc == 1)
+	file_number = get_options_and_file_list(argc, argv, &files, &option_field);
+	for (int i = 0; i < file_number; i++)
 	{
-
-		to_read = malloc(sizeof(*to_read) * 2);
-		to_read[0] = argv[0];
-		to_read[1] = ft_strdup("a.out");
-		argc++;
-	}
-	for (int i = 1; i < argc; i++)
-	{
+		struct	stat st;
+		t_mem	file;
 		//one file per loop "argv[i]"
-		file.name = to_read[i];
-		if (filehandler(&file, &st) == ERROR)
+		file.name = files[i];
+		if (file_handler(&file, &st) == ERROR)
 		{
 			ret++;
 			continue;
 		}
-		if (file_routine(&file))
+		if (file_routine(&file, option_field))
 			ret++;
 		munmap(file.raw, st.st_size);
 	}
-	if (to_read != argv)
+	if (argc == 1)
 	{
-		free(to_read[1]);
-		free(to_read);
+		free(files[1]);
+		free(files);
 	}
 	return (ret);
 }
