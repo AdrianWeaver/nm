@@ -80,17 +80,24 @@ int	check_ehdr(t_mem *file)
 int	_check_ehdr_64lsb(const t_mem *file)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) file->raw;
+	Elf64_Shdr *shdr = (Elf64_Shdr *) ehdr->e_shoff;
+
 	//check e_type only core files are errors
 	if (ehdr->e_type == ET_CORE)
 		goto format_error;
+
 	//check if the program header table is not too big for the file
 	if ((uint8_t)(ehdr->e_phoff + (ehdr->e_phnum * ehdr->e_phentsize)) > file->size)
 		goto format_error;
+
 	//check if the section header table is not too big for the file
 	if ((uint8_t)(ehdr->e_shoff + (ehdr->e_shnum * ehdr->e_shentsize)) > file->size)
 		goto format_error;
+
 	//check for string table
-	if (ehdr->e_shstrndx == SHN_UNDEF || ehdr->e_shstrndx > ehdr->e_shnum)
+	if (ehdr->e_shstrndx == SHN_UNDEF						//no string table index
+		|| ehdr->e_shstrndx > ehdr->e_shnum					//string table index is outside of file
+		|| shdr[ehdr->e_shstrndx].sh_type != SHT_STRTAB)	//string table is not the correct type
 	{
 		fprintf(stderr, "nm: warning: %s: file has a corrupt string table index - ignoring\n", file->name);
 		fprintf(stderr, "nm: %s: no symbols\n", file->name);
