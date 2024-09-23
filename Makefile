@@ -62,7 +62,8 @@ create:
 			@$(MAKE) --no-print-directory nm
 
 nm:			
-			-nm modified_elf
+			@echo "nm modified_elf"
+			-@nm modified_elf || echo "nm returned $$?"
 			
 .PHONY: all, clean, fclean, re, test, vtest, create, libft
 
