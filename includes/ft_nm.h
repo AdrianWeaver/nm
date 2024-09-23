@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #ifndef FT_NM_H
  #define FT_NM_H
 
@@ -5,7 +7,9 @@
 
 #define PAGESIZE 4096
 
-#define ERROR -1
+#ifndef ERROR
+# define ERROR -1
+#endif
 
 typedef struct s_mem
 {
@@ -22,8 +26,24 @@ typedef struct s_symbol {
 	char				*name;
 } t_symbol;
 
+//defined values for option parsing
+enum OptionReturns {
+	NOTANOPTION,
+	SUCCESS,
+	HELP,
+};
+
+enum OptionParser {
+	OPTION_A,
+	OPTION_G,
+	OPTION_U,
+	OPTION_R,
+	OPTION_P,
+	OPTION_H,
+};
+
 uint8_t	*handleFile(char *target, int *fd, struct stat *st);
-int file_routine(t_mem *file);
+int	file_routine(t_mem *file, uint8_t optionField);
 
 //read protections
 void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffersize);
@@ -51,9 +71,20 @@ int	check_shdr_32lsb(const t_mem *file);
 int	check_shdr_64msb(const t_mem *file);
 int	check_shdr_32msb(const t_mem *file);
 
-//reverse endianness
+//symbols
+int	get_symbols(t_mem *file, uint8_t optionField);
+int	get_symbols_64lsb(t_mem *file, uint8_t optionField);
+int	get_symbols_32lsb(t_mem *file, uint8_t optionField);
+int	get_symbols_64msb(t_mem *file, uint8_t optionField);
+int	get_symbols_32msb(t_mem *file, uint8_t optionField);
 
-uint16_t rev16(uint16_t origin);
-uint32_t rev32(uint32_t origin);
-uint64_t rev64(uint64_t origin);
+//options
+int		getOptions(char *input, uint8_t *optionField);
+void	printUsage(char invalidOption);
+
+//reverse endianness
+uint16_t	rev16(uint16_t origin);
+uint32_t	rev32(uint32_t origin);
+uint64_t	rev64(uint64_t origin);
+
 #endif

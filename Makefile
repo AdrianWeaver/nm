@@ -9,8 +9,9 @@ SRCS	=	main.c\
 			utils.c\
 			ehdr.c\
 			phdr.c\
-			shdr.c
-			#symbols.c
+			shdr.c\
+			options.c\
+			symbols.c
 
 OBJS_PATH	= ./objects/
 OBJS	=	$(addprefix $(OBJS_PATH), $(SRCS:.c=.o))
@@ -26,12 +27,10 @@ LIBFT	=   libft/libft.a
 all:	$(NAME)
 
 $(NAME):	$(OBJS) $(LIBFT)
-			@echo "called linker"
 			$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $@
 
 $(OBJS_PATH)%.o:	$(SRCS_PATH)%.c
 			mkdir -p $(OBJS_PATH)
-			@echo "called this rule"
 			$(CC) $(CPPFLAGS) $(CFLAGS) $< -o $@ $(INC)
 
 
