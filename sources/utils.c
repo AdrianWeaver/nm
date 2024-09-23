@@ -15,14 +15,14 @@
  *
  *	@param t_mem *file the file structure with infos
  *	@param addr the address to attempt to read
- *	@param buffersize the amount of bytes to be read
+ *	@param buffer_size the amount of bytes to be read
  *	@return NULL in case of error, address of offset if succeeded
 */
-void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffersize)
+void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffer_size)
 {
 	if (addr < mem->raw)
 		return (NULL);
-	if (addr + buffersize > mem->raw + mem->size)
+	if (addr + buffer_size > mem->raw + mem->size)
 		return (NULL);
 	return ((void *)addr);
 }

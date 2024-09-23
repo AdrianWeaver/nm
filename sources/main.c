@@ -62,7 +62,7 @@ int file_handler(t_mem *file, struct stat *st)
  *
  * @return non-zero in case of error
  */
-int file_routine(t_mem *file, uint8_t optionField)
+int file_routine(t_mem *file, uint8_t option_field)
 {
 	if (check_ehdr(file) == ERROR)
 		return (ERROR);
@@ -70,7 +70,7 @@ int file_routine(t_mem *file, uint8_t optionField)
 		return (ERROR);
 	if (check_shdr(file) == ERROR)
 		return (ERROR);
-	if (get_symbols(file, optionField) == ERROR)
+	if (get_symbols(file, option_field) == ERROR)
 		return (ERROR);
 	return (0);
 }
