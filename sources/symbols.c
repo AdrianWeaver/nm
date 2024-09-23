@@ -37,12 +37,14 @@ int	get_symbols(t_mem *file, uint8_t option_field)
 int	_get_symbols_64lsb(t_mem *file, uint8_t option_field)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file;
-	Elf64_Ehdr *shdr_table = (Elf64_Shdr *)file->e_shoff;
+	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&ehdr->e_shoff;
+	const unsigned char	*string_table = &file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
 	//get shdr_table
 	//get symtab
 	//get symstrtab
 	//get symboltype
-	(void)file; (void)option_field; return (0); //no compilation error
+
+	(void) ehdr; (void) string_table; (void)file; (void)option_field; return (0); //no compilation error
 }
 
 int	_get_symbols_32lsb(t_mem *file, uint8_t option_field)

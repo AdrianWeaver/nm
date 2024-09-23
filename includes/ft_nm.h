@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <elf.h>
 
 #ifndef FT_NM_H
  #define FT_NM_H
@@ -71,6 +72,7 @@ int	_check_shdr_64lsb(const t_mem *file);
 int	_check_shdr_32lsb(const t_mem *file);
 int	_check_shdr_64msb(const t_mem *file);
 int	_check_shdr_32msb(const t_mem *file);
+int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsigned char *section_name);
 
 //symbols
 int	get_symbols(t_mem *file, uint8_t optionField);

@@ -21,7 +21,7 @@ int main(void)
 	struct	stat st;
 	int		fd;
 	void	*mem_head;
-	void	*mem;
+	uint8_t	*mem;
 	int		ret;
 	int		to_write;
 
@@ -40,11 +40,15 @@ int main(void)
 	// modify below
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr*)mem;
 	Elf64_Shdr *shdr_tab = (Elf64_Shdr *)(mem + ehdr->e_shoff);
+	char *string_table = (char *)&mem[shdr_tab[ehdr->e_shstrndx].sh_offset];
+	(void) string_table;
+	uint64_t	string_table_size = shdr_tab[ehdr->e_shstrndx].sh_size;
+	printf("string table size: %lu\n", string_table_size);
 	for (int i = 0; i < ehdr->e_shnum; i++)
 	{
 		Elf64_Shdr *shdr = &shdr_tab[i];
-		printf("size = %lu\n", shdr->sh_size);
-		shdr->sh_entsize += 1;
+		if (i == 2)
+			shdr->sh_type = 52;
 	}
 	// modify above
 	while ((ret = write(fd, mem, to_write)) > 0)
