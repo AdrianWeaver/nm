@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	{
 		struct	stat st;
 		t_mem	file;
-		t_bst	*symbol_list;
+		t_bst	*symbol_list = NULL;
 		//one file per loop "argv[i]"
 		file.name = files[i];
 		if (file_handler(&file, &st) == ERROR)

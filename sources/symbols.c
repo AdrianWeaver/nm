@@ -44,7 +44,7 @@ int	get_symbols(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
-	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&ehdr->e_shoff;
+	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
 	char	* const string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
 	int (*sort_function)(void *, void*) = _symbol_sort_order;
 	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
@@ -54,16 +54,26 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 		Elf64_Shdr *shdr = &shdr_table[i];
 		if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM) //if not a symbol section go next
 			continue;
-		Elf64_Sym *symbol_table = (Elf64_Sym *) &shdr[i].sh_offset;
+		Elf64_Sym *symbol_table = (Elf64_Sym *) &file->raw[shdr->sh_offset];
 		for (uint32_t j = 0; j < shdr->sh_size / shdr->sh_entsize; j++) //iterate on symbols
 		{
+			printf("loop %d\n", j);
+
 			Elf64_Sym *symbol = &symbol_table[j];
+			char *symbol_string_table = (char *)&file->raw[shdr_table[shdr->sh_link].sh_offset];
+
+
 			t_symbol *tmp = malloc(sizeof(*tmp) * 1);
-			tmp->name = &string_table[symbol->st_name];
+			tmp->name = &symbol_string_table[symbol->st_name];
+			if (symbol->st_name == 0)
+				tmp->name = NULL;
+			printf("symbol_name = %s\n", tmp->name);
 			tmp->value = symbol->st_value;
 			t_bst *node = ft_bstnew(tmp);
+			printf("symbol test = %s\n", ((t_symbol *)node->content)->name);
 			if (option_field & (1 << OPTION_P)) //do not sort
 			{
+				printf("DEBUG: option -p detected\n");
 				ft_bstinsert(symbol_list, node, _symbol_no_sort);
 				continue;
 			}
@@ -112,16 +122,22 @@ static int _symbol_sort_order(void *lhs, void *rhs)
 {
 	t_symbol *node_in_tree = (t_symbol *)lhs;
 	t_symbol *node_to_be_added = (t_symbol *)rhs;
+	if (!lhs)
+		return (true);
 	if (node_in_tree->name && node_to_be_added->name &&
 		ft_strcmp(node_in_tree->name, node_to_be_added->name))
 	{
+		printf("inserted using name\n");
+		printf("tree name : %s - newnode name: %s, diff: %d\n", node_in_tree->name, node_to_be_added->name, ft_strcmp(node_in_tree->name, node_to_be_added->name));
 		return (ft_strcmp(node_in_tree->name, node_to_be_added->name));
 	}
 	if (node_in_tree->type != node_to_be_added->type)
 	{
-		return (node_in_tree->type < node_to_be_added->type);
+		printf("inserted using type\n");
+		return (node_to_be_added->type < node_in_tree->type);
 	}
-	return (node_in_tree->value < node_to_be_added->value);
+		printf("inserted using value\n");
+	return (node_to_be_added->value < node_in_tree->value);
 }
 
 static int _symbol_no_sort(void *lhs, void *rhs)
@@ -133,7 +149,8 @@ static int _symbol_no_sort(void *lhs, void *rhs)
 static void	_print_symbol(void *content)
 {
 	t_symbol *symbol = (t_symbol *)content;
+	symbol->type = 'R';
+	printf("test: %s\n", symbol->name);
 
-	printf("oui\n");
 	printf("%016lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
 }
