@@ -150,7 +150,6 @@ static void	_print_symbol(void *content)
 {
 	t_symbol *symbol = (t_symbol *)content;
 	symbol->type = 'R';
-	printf("test: %s\n", symbol->name);
 
 	printf("%016lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
 }
