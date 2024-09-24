@@ -63,21 +63,25 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 			char *symbol_string_table = (char *)&file->raw[shdr_table[shdr->sh_link].sh_offset];
 
 
-			t_symbol *tmp = malloc(sizeof(*tmp) * 1);
-			tmp->name = &symbol_string_table[symbol->st_name];
+			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+			tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			if (symbol->st_name == 0)
-				tmp->name = NULL;
-			printf("symbol_name = %s\n", tmp->name);
-			tmp->value = symbol->st_value;
-			t_bst *node = ft_bstnew(tmp);
-			printf("symbol test = %s\n", ((t_symbol *)node->content)->name);
+				tmp_symbol->name = "";
+			tmp_symbol->value = symbol->st_value;
+			t_bst *tmp_node = ft_bstnew(tmp_symbol);
+			printf("--- symbol_name = %s\n", tmp_symbol->name);
+			printf("--- node_name = %s\n", ((t_symbol *)tmp_node->content)->name);
+			printf("--- symbol_value = %lu\n", tmp_symbol->value);
+			printf("--- node_value = %lu\n", ((t_symbol *)tmp_node->content)->value);
+			tmp_symbol->value = symbol->st_value;
+			//printf("symbol test = %s\n", ((t_symbol *)tmp_node->content)->name);
 			if (option_field & (1 << OPTION_P)) //do not sort
 			{
 				printf("DEBUG: option -p detected\n");
-				ft_bstinsert(symbol_list, node, _symbol_no_sort);
+				ft_bstinsert(symbol_list, tmp_node, _symbol_no_sort);
 				continue;
 			}
-			ft_bstinsert(symbol_list, node, _symbol_sort_order);
+			ft_bstinsert(symbol_list, tmp_node, _symbol_sort_order);
 		}
 		//TODO: this could be better because name and value should be const
 		//try to initialize a stack symbol then memcopy it in the malloced one.
@@ -118,32 +122,52 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
 }
 
+/*
+ *	@brief function used to compare symbols and sort them used by ft_bstinsert
+ *
+ *	@param lhs most likely the new node to be added
+ *	@param rhs most likely one of the old nodes for comparison
+ *
+ *	@return 
+*/
+//TODO: there is a clear error here
+//STAF START HERE
 static int _symbol_sort_order(void *lhs, void *rhs)
 {
-	t_symbol *node_in_tree = (t_symbol *)lhs;
-	t_symbol *node_to_be_added = (t_symbol *)rhs;
-	if (!lhs)
-		return (true);
-	if (node_in_tree->name && node_to_be_added->name &&
-		ft_strcmp(node_in_tree->name, node_to_be_added->name))
+	t_symbol *new_content = (t_symbol *)lhs;
+	t_symbol *old_content = (t_symbol *)rhs;
+
+	//special case:
+	//null name
+	//if strcmp != 0 return strcmp
+	//if strcmp == 0 && type != return type
+	//else return addr
+	printf("--- CALL SORT ORDER\n\tnew_content->name: %s\n\told_content->name: %s\n", new_content->name, old_content->name);
+	if (!lhs || !rhs)
+	{
+		printf("!!! REFUSING INSERTION !!!\n");
+		return (0);
+	}
+	if (new_content->name && old_content->name &&
+		ft_strcmp(new_content->name, old_content->name))
 	{
 		printf("inserted using name\n");
-		printf("tree name : %s - newnode name: %s, diff: %d\n", node_in_tree->name, node_to_be_added->name, ft_strcmp(node_in_tree->name, node_to_be_added->name));
-		return (ft_strcmp(node_in_tree->name, node_to_be_added->name));
+		printf("new name : %s - old name: %s, diff: %d\n", new_content->name, old_content->name, ft_strcmp(new_content->name, old_content->name));
+		return (ft_strcmp(new_content->name, old_content->name));
 	}
-	if (node_in_tree->type != node_to_be_added->type)
+	if (new_content->type != old_content->type)
 	{
 		printf("inserted using type\n");
-		return (node_to_be_added->type < node_in_tree->type);
+		return (new_content->type - old_content->type);
 	}
-		printf("inserted using value\n");
-	return (node_to_be_added->value < node_in_tree->value);
+		printf("inserted using value: %ld\n", new_content->value - old_content->value);
+	return (new_content->value - old_content->value);
 }
 
 static int _symbol_no_sort(void *lhs, void *rhs)
 {
 	(void)lhs;(void)rhs;
-	return (true); //returning always true helps adding new nodes on the right side of the tree.
+	return (1); //returning always true helps adding new nodes on the right side of the tree.
 }
 
 static void	_print_symbol(void *content)
