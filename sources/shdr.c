@@ -112,7 +112,11 @@ int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsign
 	{
 		case SHT_NULL:
 		case SHT_PROGBITS:
+			break;
 		case SHT_SYMTAB:
+			if (shdr->sh_entsize != sizeof(Elf64_Sym))
+				return (fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
+			break;
 		case SHT_STRTAB:
 		case SHT_RELA:
 		case SHT_HASH:
@@ -121,7 +125,11 @@ int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsign
 		case SHT_NOBITS:
 		case SHT_REL:
 		case SHT_SHLIB:
+			break;
 		case SHT_DYNSYM:
+			if (shdr->sh_entsize != sizeof(Elf64_Sym))
+				return (fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
+			break;
 		case SHT_INIT_ARRAY:
 		case SHT_FINI_ARRAY:
 		case SHT_PREINIT_ARRAY:
@@ -133,15 +141,15 @@ int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsign
 		case SHT_GNU_HASH:
 		case SHT_GNU_LIBLIST:
 		case SHT_CHECKSUM:
-		case SHT_LOSUNW:
+		//case SHT_LOSUNW:	//adapt this in case SHTSUNW_move != SHT_LOSUNW
+		//case SHT_HISUNW:	//adapt this in case SHT_GNU_versym != SHT_HISUNW
 		case SHT_SUNW_move:
 		case SHT_SUNW_COMDAT:
 		case SHT_SUNW_syminfo:
 		case SHT_GNU_verdef:
 		case SHT_GNU_verneed:
 		case SHT_GNU_versym:
-		case SHT_HISUNW:
-		case SHT_HIOS:
+		//case SHT_HIOS:	//adapt this in case SHT_GNU_versym != SHT_HIOS
 			break;
 		default:
 			//nm: %file: unknown type [0xval] section `.sectionname'\n then continuing on nm
