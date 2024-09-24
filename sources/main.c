@@ -62,7 +62,7 @@ int file_handler(t_mem *file, struct stat *st)
  *
  * @return non-zero in case of error
  */
-int file_routine(t_mem *file, uint8_t option_field)
+int file_routine(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	if (check_ehdr(file) == ERROR)
 		return (ERROR);
@@ -70,7 +70,7 @@ int file_routine(t_mem *file, uint8_t option_field)
 		return (ERROR);
 	if (check_shdr(file) == ERROR)
 		return (ERROR);
-	if (get_symbols(file, option_field) == ERROR)
+	if (get_symbols(file, option_field, symbol_list) == ERROR)
 		return (ERROR);
 	return (0);
 }
@@ -93,6 +93,7 @@ int main(int argc, char **argv)
 	{
 		struct	stat st;
 		t_mem	file;
+		t_bst	*symbol_list;
 		//one file per loop "argv[i]"
 		file.name = files[i];
 		if (file_handler(&file, &st) == ERROR)
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
 			ret++;
 			continue;
 		}
-		if (file_routine(&file, option_field))
+		if (file_routine(&file, option_field, &symbol_list))
 			ret++;
 		munmap(file.raw, st.st_size);
 	}

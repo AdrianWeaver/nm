@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <elf.h>
+#include "libft.h"
 
 #ifndef FT_NM_H
  #define FT_NM_H
@@ -45,7 +46,7 @@ enum OptionParser {
 };
 
 uint8_t	*handleFile(char *target, int *fd, struct stat *st);
-int	file_routine(t_mem *file, uint8_t optionField);
+int	file_routine(t_mem *file, uint8_t optionField, t_bst **symbol_list);
 
 //read protections
 void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffersize);
@@ -75,11 +76,11 @@ int	_check_shdr_32msb(const t_mem *file);
 int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsigned char *section_name);
 
 //symbols
-int	get_symbols(t_mem *file, uint8_t optionField);
-int	_get_symbols_64lsb(t_mem *file, uint8_t optionField);
-int	_get_symbols_32lsb(t_mem *file, uint8_t optionField);
-int	_get_symbols_64msb(t_mem *file, uint8_t optionField);
-int	_get_symbols_32msb(t_mem *file, uint8_t optionField);
+int	get_symbols(t_mem *file, uint8_t optionField, t_bst **symbol_list);
+int	_get_symbols_64lsb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
+int	_get_symbols_32lsb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
+int	_get_symbols_64msb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
+int	_get_symbols_32msb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
 
 //options
 int		get_options_and_file_list(int argc, char **argv, char ***files, uint8_t *bitfield);

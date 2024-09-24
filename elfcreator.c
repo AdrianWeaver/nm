@@ -40,15 +40,22 @@ int main(void)
 	// modify below
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr*)mem;
 	Elf64_Shdr *shdr_tab = (Elf64_Shdr *)(mem + ehdr->e_shoff);
-	char *string_table = (char *)&mem[shdr_tab[ehdr->e_shstrndx].sh_offset];
-	(void) string_table;
-	uint64_t	string_table_size = shdr_tab[ehdr->e_shstrndx].sh_size;
-	printf("string table size: %lu\n", string_table_size);
+	char *string_table = (char *)&mem[shdr_tab[ehdr->e_shstrndx].sh_offset]; (void) string_table;
 	for (int i = 0; i < ehdr->e_shnum; i++)
 	{
 		Elf64_Shdr *shdr = &shdr_tab[i];
-		if (i == 2)
-			shdr->sh_type = 52;
+		(void)shdr;
+		if (shdr->sh_entsize == 24)
+		{
+			printf("sh_type: %d - sh_entsize: %lu\n", shdr->sh_type, shdr->sh_entsize);
+		}
+		//if (shdr->sh_type == SHT_SYMTAB || shdr->sh_type == SHT_DYNSYM)
+		if (shdr->sh_type == SHT_RELA)
+		{
+			shdr->sh_entsize = 32;
+		}
+		if (shdr->sh_type == SHT_SYMTAB_SHNDX)
+			printf("yup\n");
 	}
 	// modify above
 	while ((ret = write(fd, mem, to_write)) > 0)
