@@ -41,11 +41,20 @@ int	get_symbols(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	return (ERROR);
 }
 
+/*
+ *	@brief this function gets symbols and prints them
+ *
+ *	@param file a t_mem* storing the file and infos
+ *	@param option_field a bitfield storing options given by user
+ *	@param symbol_list the address of the symbol list where the symbols are to be stored
+ *
+ *	@return non-zero in case of errors
+*/
 int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
 	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
-	char	* const string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
+	//char	* const string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
 	int (*sort_function)(void *, void*) = _symbol_sort_order;
 	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
 
@@ -57,8 +66,6 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 		Elf64_Sym *symbol_table = (Elf64_Sym *) &file->raw[shdr->sh_offset];
 		for (uint32_t j = 0; j < shdr->sh_size / shdr->sh_entsize; j++) //iterate on symbols
 		{
-			printf("loop %d\n", j);
-
 			Elf64_Sym *symbol = &symbol_table[j];
 			char *symbol_string_table = (char *)&file->raw[shdr_table[shdr->sh_link].sh_offset];
 
@@ -69,42 +76,20 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				tmp_symbol->name = "";
 			tmp_symbol->value = symbol->st_value;
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);
-			printf("--- symbol_name = %s\n", tmp_symbol->name);
-			printf("--- node_name = %s\n", ((t_symbol *)tmp_node->content)->name);
-			printf("--- symbol_value = %lu\n", tmp_symbol->value);
-			printf("--- node_value = %lu\n", ((t_symbol *)tmp_node->content)->value);
-			tmp_symbol->value = symbol->st_value;
-			//printf("symbol test = %s\n", ((t_symbol *)tmp_node->content)->name);
 			if (option_field & (1 << OPTION_P)) //do not sort
-			{
-				printf("DEBUG: option -p detected\n");
-				ft_bstinsert(symbol_list, tmp_node, _symbol_no_sort);
-				continue;
-			}
-			ft_bstinsert(symbol_list, tmp_node, _symbol_sort_order);
+				sort_function = _symbol_no_sort;
+			ft_bstinsert(symbol_list, tmp_node, sort_function);
 		}
 		//TODO: this could be better because name and value should be const
 		//try to initialize a stack symbol then memcopy it in the malloced one.
 		//use const qualifiers in the symbol
 	}
 	if (option_field & (1 << OPTION_R)) //reverse print
-	{
 		iteration_function = ft_bstriter;
-	}
-	printf("SHOULD PRINT THE SYMBOLS HERE\n");
+	//printing symbols
 	(*iteration_function)(symbol_list, _print_symbol);
-	//get shdr_table
-	//get symtab
-	//get symstrtab
-	//get symboltype
-
-	(void)iteration_function;(void)sort_function;(void)symbol_list;(void) ehdr; (void) string_table; (void)file; (void)option_field; return (0); //no compilation error
-	//print
-	if (option_field & (1 << OPTION_R)) //print in reverse
-	{;}
-	if (option_field & (1 << OPTION_R)) //print in reverse
-	{;}
-	//print
+	//TODO: add clear bst_tree here
+	return (0);
 }
 
 int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
@@ -125,42 +110,24 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 /*
  *	@brief function used to compare symbols and sort them used by ft_bstinsert
  *
- *	@param lhs most likely the new node to be added
- *	@param rhs most likely one of the old nodes for comparison
+ *	@param new a pointer on the content being added
+ *	@param inplace a pointer on the content already in the tree for the comparison
  *
- *	@return 
+ * 	@return an int to represent if the new content is >,<,== compared to the old one
+ *	@retval > 0 if newcontent should go to the right
+ *	@retval < 0 if newcontent should go to the left
+ *	@retval = 0 if newcontent is already in the binary tree
 */
-//TODO: there is a clear error here
-//STAF START HERE
-static int _symbol_sort_order(void *lhs, void *rhs)
+static int _symbol_sort_order(void *new, void *inplace)
 {
-	t_symbol *new_content = (t_symbol *)lhs;
-	t_symbol *old_content = (t_symbol *)rhs;
+	t_symbol *new_content = (t_symbol *)new;
+	t_symbol *old_content = (t_symbol *)inplace;
+	int diff = 0;
 
-	//special case:
-	//null name
-	//if strcmp != 0 return strcmp
-	//if strcmp == 0 && type != return type
-	//else return addr
-	printf("--- CALL SORT ORDER\n\tnew_content->name: %s\n\told_content->name: %s\n", new_content->name, old_content->name);
-	if (!lhs || !rhs)
-	{
-		printf("!!! REFUSING INSERTION !!!\n");
-		return (0);
-	}
-	if (new_content->name && old_content->name &&
-		ft_strcmp(new_content->name, old_content->name))
-	{
-		printf("inserted using name\n");
-		printf("new name : %s - old name: %s, diff: %d\n", new_content->name, old_content->name, ft_strcmp(new_content->name, old_content->name));
-		return (ft_strcmp(new_content->name, old_content->name));
-	}
-	if (new_content->type != old_content->type)
-	{
-		printf("inserted using type\n");
-		return (new_content->type - old_content->type);
-	}
-		printf("inserted using value: %ld\n", new_content->value - old_content->value);
+	if ((diff = ft_strcmp(new_content->name, old_content->name)))
+		return (diff);
+	if ((diff = new_content->type - old_content->type))
+		return (diff);
 	return (new_content->value - old_content->value);
 }
 

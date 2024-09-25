@@ -78,7 +78,6 @@ int	_check_shdr_64lsb(const t_mem *file)
 		//linked section is within section list
 		if (shdr.sh_link > ehdr->e_shnum)
 			return (ERROR);
-		printf("DEBUG SECTION TYPE: %d - SECTION SIZE: %lu\n", shdr.sh_type, shdr.sh_entsize);
 		//check that size of section and elements is not corrupt
 		if (shdr.sh_entsize && (shdr.sh_size % shdr.sh_entsize) != 0)
 			return (ERROR);
