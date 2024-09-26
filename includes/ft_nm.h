@@ -25,7 +25,7 @@ typedef struct s_mem
 typedef struct s_symbol {
 	unsigned long int	value;
 	char				type;
-	char				*name;
+	char		*name;
 } t_symbol;
 
 //defined values for option parsing
@@ -81,6 +81,12 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
 int	_get_symbols_32lsb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
 int	_get_symbols_64msb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
 int	_get_symbols_32msb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
+
+//type
+char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym);
+char get_symbol_type_32lsb(t_mem *file, Elf32_Sym *symbol);
+char get_symbol_type_64msb(t_mem *file, Elf64_Sym *symbol);
+char get_symbol_type_32msb(t_mem *file, Elf32_Sym *symbol);
 
 //options
 int		get_options_and_file_list(int argc, char **argv, char ***files, uint8_t *bitfield);

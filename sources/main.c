@@ -77,7 +77,7 @@ int file_routine(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 
 //options:
 // -a : display all symbols even debugger-only symbols
-// -g : display only external symbols
+// -g : display only external (global) symbols
 // -u : display only undefined symbols (external to each object file)
 // -r : reverse sort
 // -p : no-sort

@@ -81,6 +81,7 @@ const char *protected_read_str(const t_mem *mem, const char *addr)
  *	@param origin the 16bits wide value to swap
  *	@return 16bits value with swapped endianness.
 */
+//it seems like this could be replace by builtin __bswap_16
 uint16_t rev16(uint16_t origin)
 {
 	uint16_t byte_1;		//leftmost byte after swap
@@ -97,6 +98,7 @@ uint16_t rev16(uint16_t origin)
  *	@param origin the 16bits wide value to swap
  *	@return 32bits value with swapped endianness.
 */
+//it seems like this could be replace by builtin __bswap_32
 uint32_t rev32(uint32_t origin)
 {
 	uint8_t byte_1;	//leftmost byte after reverse
@@ -118,6 +120,7 @@ uint32_t rev32(uint32_t origin)
  *	@param origin the 16bits wide value to swap
  *	@return 32bits value with swapped endianness.
 */
+//it seems like this could be replace by builtin __bswap_64
 uint64_t rev64(uint64_t origin)
 {
 	uint8_t byte_1;	//leftmost byte after reverse

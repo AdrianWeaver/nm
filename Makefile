@@ -11,7 +11,8 @@ SRCS	=	main.c\
 			phdr.c\
 			shdr.c\
 			options.c\
-			symbols.c
+			symbols.c\
+			types.c
 
 OBJS_PATH	= ./objects/
 OBJS	=	$(addprefix $(OBJS_PATH), $(SRCS:.c=.o))
@@ -50,6 +51,7 @@ re:			fclean
 
 test:		$(NAME)
 			./$(NAME) modified_elf
+			nm modified_elf
 			#./$(NAME) $(NAME)
 
 vtest:		$(NAME)

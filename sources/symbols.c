@@ -54,7 +54,6 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
 	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
-	//char	* const string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
 	int (*sort_function)(void *, void*) = _symbol_sort_order;
 	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
 
@@ -67,10 +66,13 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 		for (uint32_t j = 0; j < shdr->sh_size / shdr->sh_entsize; j++) //iterate on symbols
 		{
 			Elf64_Sym *symbol = &symbol_table[j];
+			if (symbol->st_shndx > ehdr->e_shnum)
+				continue;
 			char *symbol_string_table = (char *)&file->raw[shdr_table[shdr->sh_link].sh_offset];
 
 
 			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+			//TODO: Add malloc protection
 			tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			if (symbol->st_name == 0)
 			{
@@ -79,6 +81,7 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 					continue;
 			}
 			tmp_symbol->value = symbol->st_value;
+			tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);
 			if (option_field & (1 << OPTION_P)) //do not sort
 				sort_function = _symbol_no_sort;
@@ -144,7 +147,11 @@ static int _symbol_no_sort(void *lhs, void *rhs)
 static void	_print_symbol(void *content)
 {
 	t_symbol *symbol = (t_symbol *)content;
-	symbol->type = 'R';
 
+	if (symbol->type == 'w' || symbol->type == 'U')
+	{
+		printf("                 %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
+		return ;
+	}
 	printf("%016lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
 }
