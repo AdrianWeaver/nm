@@ -73,7 +73,11 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
 			tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			if (symbol->st_name == 0)
+			{
 				tmp_symbol->name = "";
+				if (symbol->st_size == 0)
+					continue;
+			}
 			tmp_symbol->value = symbol->st_value;
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);
 			if (option_field & (1 << OPTION_P)) //do not sort
