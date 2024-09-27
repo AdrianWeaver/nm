@@ -106,6 +106,8 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
 		iteration_function = ft_bstriter;
 	//printing symbols
+	if (option_field & OPTION_MULTIPLE_FILES)
+		printf("\n%s:\n", file->name);
 	(*iteration_function)(symbol_list, _print_symbol);
 	ft_bstclear(symbol_list, free);
 	return (0);
