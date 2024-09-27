@@ -37,12 +37,14 @@ enum OptionReturns {
 };
 
 enum OptionParser {
-	OPTION_A,
-	OPTION_G,
-	OPTION_U,
-	OPTION_R,
-	OPTION_P,
-	OPTION_H,
+	OPTION_NONE = 0,
+	OPTION_A = (1 << 1),
+	OPTION_G = (1 << 2),
+	OPTION_U = (1 << 3),
+	OPTION_R = (1 << 4),
+	OPTION_P = (1 << 5),
+	OPTION_H = (1 << 6),
+	OPTION_MULTIPLE_FILES = (1 << 6),
 };
 
 uint8_t	*handleFile(char *target, int *fd, struct stat *st);

@@ -89,6 +89,8 @@ int main(int argc, char **argv)
 	uint8_t	option_field = 0;
 
 	file_number = get_options_and_file_list(argc, argv, &files, &option_field);
+	if (file_number > 1)
+		option_field |= OPTION_MULTIPLE_FILES;
 	for (int i = 0; i < file_number; i++)
 	{
 		struct	stat st;

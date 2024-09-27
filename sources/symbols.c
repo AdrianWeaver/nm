@@ -101,9 +101,9 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 		//try to initialize a stack symbol then memcopy it in the malloced one.
 		//use const qualifiers in the symbol
 	}
-	if (option_field & (1 << OPTION_P)) //do not sort
+	if (option_field & OPTION_P) //do not sort
 		sort_function = _symbol_no_sort;
-	if ((option_field & (1 << OPTION_R | 1 << OPTION_P)) == (1 << OPTION_R)) //reverse print
+	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
 		iteration_function = ft_bstriter;
 	//printing symbols
 	(*iteration_function)(symbol_list, _print_symbol);

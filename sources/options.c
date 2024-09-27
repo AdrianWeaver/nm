@@ -44,22 +44,22 @@ void	_get_options(char *input, uint8_t *option_field)
 		switch (input[i])
 		{
 			case 'a':
-				*option_field |= (1 << OPTION_A);
+				*option_field |= OPTION_A;
 				break;
 			case 'g':
-				*option_field |= (1 << OPTION_G);
+				*option_field |= OPTION_G;
 				break;
 			case 'u':
-				*option_field |= (1 << OPTION_U);
+				*option_field |= OPTION_U;
 				break;
 			case 'r':
-				*option_field |= (1 << OPTION_R);
+				*option_field |= OPTION_R;
 				break;
 			case 'p':
-				*option_field |= (1 << OPTION_P);
+				*option_field |= OPTION_P;
 				break;
 			case 'h':
-				*option_field |= (1 << OPTION_H);
+				*option_field |= OPTION_H;
 				_printUsage('h');
 				exit(0);;
 			default:
