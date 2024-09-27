@@ -8,8 +8,8 @@ char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym)
 	char *sh_type[] = { "SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", "SHT_RELA", "SHT_HASH", "SHT_DYNAMIC", "SHT_NOTE", "SHT_NOBITS", "SHT_REL", "SHT_SHLIB", "SH_DYNSYM" };
 	char *st_type[] = { "STT_NOTYPE", "STT_OBJECT", "STT_FUNC", "STT_SECTION", "STT_FILE", "STT_COMMON", "STT_TLS", "STT_NUM" };
 	char *st_bind[] = { "STB_LOCAL", "STB_GLOBAL", "STB_WEAK", "STB_NUM" };
-	
-	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)&file->raw;
+
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
 	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
 	Elf64_Shdr *shdr = &shdr_table[symbol->st_shndx];
 
