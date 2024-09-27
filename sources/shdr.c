@@ -67,26 +67,27 @@ int	_check_shdr_64lsb(const t_mem *file)
 
 	for (int i = 0; i < ehdr->e_shnum; i++)
 	{
-		const Elf64_Shdr shdr = shdr_table[i];
+		const Elf64_Shdr *shdr = &shdr_table[i];
 		//types will be checked laster. error is as follow
 		//nm: %file: unknown type [0xval] section `.sectionname'\n then continuing on nm
-		if (shdr.sh_type == SHT_NULL)
+		if (shdr->sh_type == SHT_NULL)
 			continue;
 		//check size of sections
-		if (shdr.sh_offset + shdr.sh_size > file->size)
+		if (shdr->sh_offset + shdr->sh_size > file->size)
 			section_too_long = true;
 		//linked section is within section list
-		if (shdr.sh_link > ehdr->e_shnum)
+		if (shdr->sh_link > ehdr->e_shnum)
 			return (ERROR);
 		//check that size of section and elements is not corrupt
-		if (shdr.sh_entsize && (shdr.sh_size % shdr.sh_entsize) != 0)
+		if (shdr->sh_entsize && (shdr->sh_size % shdr->sh_entsize) != 0)
 			return (ERROR);
 		//checking that section name is a valid string
-		if (shdr.sh_name > shdr_table[ehdr->e_shstrndx].sh_size)
+		if (shdr->sh_name > shdr_table[ehdr->e_shstrndx].sh_size)
 			return (fprintf(stderr, "nm: %s: invalid string offset %u >= %lu for section `.shstrtab'\n",
-						file->name, shdr.sh_name, shdr_table[ehdr->e_shstrndx].sh_size), ERROR);
+						file->name, shdr->sh_name, shdr_table[ehdr->e_shstrndx].sh_size), ERROR);
 		//checking that section type is valid
-		_check_sh_type_64lsb(file, &shdr, &string_table[shdr.sh_name]);
+		_check_sh_type_64lsb(file, shdr, &string_table[shdr->sh_name]);
+		printf("%d: section_type: %d\n", i, shdr->sh_type);
 	}
 	if (section_too_long == true)
 		fprintf(stderr, "nm: warning: %s: has a section extending past end of file\n", file->name);
