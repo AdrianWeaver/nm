@@ -8,6 +8,7 @@
 static int _symbol_sort_order(void *lhs, void *rhs);
 static int _symbol_no_sort(void *lhs, void *rhs);
 static void	_print_symbol(void *node);
+//static int _symbol_contains_at(void *comparison, void *content);
 
 /*
  * @brief handler to check the correct shdr depending on class and endianness
@@ -78,7 +79,6 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				fprintf(stderr, "nm: error: memory allocation failed\n");
 				return (ERROR);
 			}
-			//TODO: Add malloc protection
 			tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			if (symbol->st_name == 0)
 			{
@@ -104,9 +104,8 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 		//try to initialize a stack symbol then memcopy it in the malloced one.
 		//use const qualifiers in the symbol
 	}
-	if (option_field & (1 << OPTION_R)) //reverse print
+	if (option_field & (1 << OPTION_R) && !(option_field & (1 << OPTION_P))) //reverse print
 		iteration_function = ft_bstriter;
-	//TODO: remove @duplicates
 	//printing symbols
 	(*iteration_function)(symbol_list, _print_symbol);
 	ft_bstclear(symbol_list, free);
@@ -130,7 +129,8 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 
 /* 	@brief case insentitive comparison of symbol names skipping leading '_'
  *
- *
+ *	@param s1 new node
+ *	@param s2 old node
  *	@return 0 if identical non-zero if different
 */
 static int	_compare_symbol_names(const char *s1, const char *s2)
@@ -168,9 +168,27 @@ static int _symbol_sort_order(void *new, void *inplace)
 	int diff = 0;
 
 	if ((diff = _compare_symbol_names(new_content->name, old_content->name)))
+	{
+		if (diff == '@')
+		{
+			char *at_in_new_name = ft_strchr(new_content->name, '@');
+			if (at_in_new_name)
+			{
+				if (ft_strlen(old_content->name)  == (size_t)(at_in_new_name - new_content->name))
+				{
+					old_content->name = new_content->name;
+					return (0);
+				}
+			}
+		}
 		return (diff);
+	}
 	if ((diff = new_content->type - old_content->type))
+	{
+		printf ("type different\n");
 		return (diff);
+	}
+	printf ("value different new_content value: %lx old_content value: %lx\n", new_content->value, old_content->value);
 	return (new_content->value - old_content->value);
 }
 
@@ -191,3 +209,22 @@ static void	_print_symbol(void *content)
 	}
 	printf("%016lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
 }
+
+/*	@brief comparison function to find a name containing a pattern
+ *
+ *	@param a char
+ *
+*/
+/*static int _symbol_contains_at(void *comparison, void *content)
+{
+	char *to_find = comparison;
+	char *str = (char *)content;
+
+	for (int i = 0; str && str[i]; i++)
+	{
+		for (int j = 0; to_find && to_find[j]; i++)
+			if (str[i] == to_find[j])
+				return (1);
+	}
+	return (0);
+}*/
