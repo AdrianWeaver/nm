@@ -141,21 +141,21 @@ static int	_compare_symbol_names(const char *s1, const char *s2)
 
 	for (;;)
 	{
-		if (s1[s1_iterator] == '_')
+		if (s1[s1_iterator] == '\0')
+			break;
+		if (s2[s2_iterator] == '\0')
+			break;
+		if (ft_strchr("()*._/-", s1[s1_iterator]))
 		{
 			s1_iterator++;
 			continue;
 		}
-		if (s2[s2_iterator] == '_')
+		if (ft_strchr("()*._/-", s2[s2_iterator]))
 		{
 			s2_iterator++;
 			continue;
 		}
 		if (ft_tolower(s1[s1_iterator]) != ft_tolower(s2[s2_iterator]))
-			break;
-		if (s1[s1_iterator] == '\0')
-			break;
-		if (s2[s2_iterator] == '\0')
 			break;
 		s1_iterator++;
 		s2_iterator++;
