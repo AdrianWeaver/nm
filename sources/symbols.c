@@ -87,7 +87,7 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				sort_function = _symbol_no_sort;
 			ft_bstinsert(symbol_list, tmp_node, sort_function);
 		}
-		//TODO: this could be better because name and value should be const
+		//TODO: this could be better because name and value should be const 
 		//try to initialize a stack symbol then memcopy it in the malloced one.
 		//use const qualifiers in the symbol
 	}
@@ -114,6 +114,29 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
 }
 
+
+/* 	@brief case insentitive comparison of symbol names skipping leading '_'
+ *
+ *
+ *	@return 0 if identical non-zero if different
+*/
+static int	_compare_symbol_names(const char *s1, const char *s2)
+{
+	size_t	i = 0;
+	size_t	j = 0;
+
+	while (s1[i] == '_')
+		i++;
+	while (s2[j] == '_')
+		j++;
+	while (s1[i] && ft_tolower(s1[i]) == ft_tolower(s2[j]))
+	{
+		i++;
+		j++;
+	}
+	return ((unsigned char)ft_tolower(s1[i]) - (unsigned char)ft_tolower(s2[j]));
+}
+
 /*
  *	@brief function used to compare symbols and sort them used by ft_bstinsert
  *
@@ -131,7 +154,7 @@ static int _symbol_sort_order(void *new, void *inplace)
 	t_symbol *old_content = (t_symbol *)inplace;
 	int diff = 0;
 
-	if ((diff = ft_strcmp(new_content->name, old_content->name)))
+	if ((diff = _compare_symbol_names(new_content->name, old_content->name)))
 		return (diff);
 	if ((diff = new_content->type - old_content->type))
 		return (diff);
