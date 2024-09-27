@@ -18,7 +18,6 @@ static void	_print_symbol(void *node);
 */
 int	get_symbols(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	printf("DEBUG: check shdr\n");
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
 		if (_get_symbols_64lsb(file, option_field, symbol_list) != ERROR)
@@ -92,8 +91,6 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);
-			if (option_field & (1 << OPTION_P)) //do not sort
-				sort_function = _symbol_no_sort;
 			if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
 			{
 				free (tmp_node);
@@ -104,7 +101,9 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 		//try to initialize a stack symbol then memcopy it in the malloced one.
 		//use const qualifiers in the symbol
 	}
-	if (option_field & (1 << OPTION_R) && !(option_field & (1 << OPTION_P))) //reverse print
+	if (option_field & (1 << OPTION_P)) //do not sort
+		sort_function = _symbol_no_sort;
+	if ((option_field & (1 << OPTION_R | 1 << OPTION_P)) == (1 << OPTION_R)) //reverse print
 		iteration_function = ft_bstriter;
 	//printing symbols
 	(*iteration_function)(symbol_list, _print_symbol);
@@ -135,19 +134,31 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 */
 static int	_compare_symbol_names(const char *s1, const char *s2)
 {
-	size_t	i = 0;
-	size_t	j = 0;
+	size_t	s1_iterator = 0;
+	size_t	s2_iterator = 0;
 
-	while (s1[i] == '_')
-		i++;
-	while (s2[j] == '_')
-		j++;
-	while (s1[i] && ft_tolower(s1[i]) == ft_tolower(s2[j]))
+	for (;;)
 	{
-		i++;
-		j++;
+		if (s1[s1_iterator] == '_')
+		{
+			s1_iterator++;
+			continue;
+		}
+		if (s2[s2_iterator] == '_')
+		{
+			s2_iterator++;
+			continue;
+		}
+		if (s1[s1_iterator] != s2[s2_iterator])
+			break;
+		if (s1[s1_iterator] == '\0')
+			break;
+		if (s2[s2_iterator] == '\0')
+			break;
+		s1_iterator++;
+		s2_iterator++;
 	}
-	return ((unsigned char)ft_tolower(s1[i]) - (unsigned char)ft_tolower(s2[j]));
+	return ((unsigned char)ft_tolower(s1[s1_iterator]) - (unsigned char)ft_tolower(s2[s2_iterator]));
 }
 
 /*
@@ -185,17 +196,15 @@ static int _symbol_sort_order(void *new, void *inplace)
 	}
 	if ((diff = new_content->type - old_content->type))
 	{
-		printf ("type different\n");
 		return (diff);
 	}
-	printf ("value different new_content value: %lx old_content value: %lx\n", new_content->value, old_content->value);
 	return (new_content->value - old_content->value);
 }
 
 static int _symbol_no_sort(void *lhs, void *rhs)
 {
-	(void)lhs;(void)rhs;
-	return (1); //returning always true helps adding new nodes on the right side of the tree.
+	//returning either 0 if duplicate or 1 if not duplicate
+	return (!!_symbol_sort_order(lhs,rhs));
 }
 
 static void	_print_symbol(void *content)

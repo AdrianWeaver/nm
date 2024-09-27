@@ -99,7 +99,7 @@ int	_check_ehdr_64lsb(const t_mem *file)
 		|| ehdr->e_shstrndx > ehdr->e_shnum					//string table index is outside of file
 		|| shdr_table[ehdr->e_shstrndx].sh_type != SHT_STRTAB)	//string table is not the correct type
 	{
-		fprintf(stderr, "nm: warning: %s: file has a corrupt string table index - ignoring\n", file->name);
+		fprintf(stderr, "nm: warning: %s has a corrupt string table index - ignoring\n", file->name);
 		fprintf(stderr, "nm: %s: no symbols\n", file->name);
 		return (ERROR);
 	}

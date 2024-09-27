@@ -28,7 +28,6 @@
 */
 int	check_shdr(const t_mem *file)
 {
-	printf("DEBUG: check shdr\n");
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
 		if (_check_shdr_64lsb(file) != ERROR)
@@ -87,7 +86,6 @@ int	_check_shdr_64lsb(const t_mem *file)
 						file->name, shdr->sh_name, shdr_table[ehdr->e_shstrndx].sh_size), ERROR);
 		//checking that section type is valid
 		_check_sh_type_64lsb(file, shdr, &string_table[shdr->sh_name]);
-		printf("%d: section_type: %d\n", i, shdr->sh_type);
 	}
 	if (section_too_long == true)
 		fprintf(stderr, "nm: warning: %s: has a section extending past end of file\n", file->name);
