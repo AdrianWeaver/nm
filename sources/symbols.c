@@ -72,20 +72,33 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 
 
 			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+			if (!tmp_symbol)
+			{
+				ft_bstclear(symbol_list, free);
+				fprintf(stderr, "nm: error: memory allocation failed\n");
+				return (ERROR);
+			}
 			//TODO: Add malloc protection
 			tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			if (symbol->st_name == 0)
 			{
 				tmp_symbol->name = "";
 				if (symbol->st_size == 0)
+				{
+					free(tmp_symbol);
 					continue;
+				}
 			}
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);
 			if (option_field & (1 << OPTION_P)) //do not sort
 				sort_function = _symbol_no_sort;
-			ft_bstinsert(symbol_list, tmp_node, sort_function);
+			if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
+			{
+				free (tmp_node);
+				free (tmp_symbol);
+			}
 		}
 		//TODO: this could be better because name and value should be const 
 		//try to initialize a stack symbol then memcopy it in the malloced one.
@@ -93,9 +106,10 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	}
 	if (option_field & (1 << OPTION_R)) //reverse print
 		iteration_function = ft_bstriter;
+	//TODO: remove @duplicates
 	//printing symbols
 	(*iteration_function)(symbol_list, _print_symbol);
-	//TODO: add clear bst_tree here
+	ft_bstclear(symbol_list, free);
 	return (0);
 }
 
@@ -113,7 +127,6 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
 }
-
 
 /* 	@brief case insentitive comparison of symbol names skipping leading '_'
  *
