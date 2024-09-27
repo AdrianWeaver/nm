@@ -149,7 +149,7 @@ static int	_compare_symbol_names(const char *s1, const char *s2)
 			s2_iterator++;
 			continue;
 		}
-		if (s1[s1_iterator] != s2[s2_iterator])
+		if (ft_tolower(s1[s1_iterator]) != ft_tolower(s2[s2_iterator]))
 			break;
 		if (s1[s1_iterator] == '\0')
 			break;
