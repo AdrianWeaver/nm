@@ -88,6 +88,8 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 					continue;
 				}
 			}
+			//STAF START HERE
+			//TODO: FIX FOR VALUES STORED ELSEWHERE (discord)
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);

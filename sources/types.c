@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "ft_nm.h"
 
+//#define DEBUG 1
 const char *sh_type[] = { "SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", "SHT_RELA", "SHT_HASH", "SHT_DYNAMIC", "SHT_NOTE", "SHT_NOBITS", "SHT_REL", "SHT_SHLIB", "SHT_DYNSYM" , "12", "13", "SHT_INIT_ARRAY", "SHT_FINI_ARRAY", "SHT_PREINIT_ARRAY", "SHT_GROUP", "SHT_SYMTAB_SHNDX", "SHT_NUM" };
 const char *st_type[] = { "STT_NOTYPE", "STT_OBJECT", "STT_FUNC", "STT_SECTION", "STT_FILE", "STT_COMMON", "STT_TLS", "STT_NUM" };
 const char *st_bind[] = { "STB_LOCAL", "STB_GLOBAL", "STB_WEAK", "STB_NUM" };
@@ -46,11 +47,13 @@ char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym)
 	}
 	if (symbol_bind == STB_WEAK)
 	{
-		if (executable_section)
-			return ('W');
-		return ('V');
+		if (symbol_type == STT_OBJECT)
+			return ('V');
+		return ('W');
 	}
 	//.bss
+	if (symbol_bind >= STB_LOOS && symbol_type <= STB_HIOS)
+		return ('u');
 	if (shdr->sh_type == SHT_PROGBITS && symbol_type == STT_FUNC)
 	{
 		if (symbol_bind == STB_LOCAL)
