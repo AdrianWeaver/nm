@@ -45,7 +45,7 @@ int file_handler(t_mem *file, struct stat *st)
 		return (ERROR);
 	if ((fd = open(file->name, O_RDONLY)) < 0)
 		return (ERROR);
-	if ((file->raw = mmap(NULL, st->st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+	if ((file->raw = mmap(NULL, st->st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
 		return (close(fd), ERROR);
 	//the file is too short to even have an ehdr
 	close(fd);

@@ -42,6 +42,33 @@ int	get_symbols(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 }
 
 /*
+ *	@brief cmp function used to find a content that has the same name if you truncate before @
+ *
+ *	@return zero if node found non-zero if content is different
+*/
+int _same_symbol_name_without_at(void *content, void *data)
+{
+	char *name = ((t_symbol *)content)->name;
+	char *comparison_string = ((t_symbol *)data)->name;
+	char *at;
+
+	if ((at = ft_strchr(comparison_string, '@')))
+	{
+		//printf("at: %s old_name: %s new_name: %s\n", at, name, comparison_string);
+		if (!ft_strncmp(name, comparison_string, at - comparison_string)
+			&& name[at - comparison_string] == '\0')
+				return (0);
+		if (ft_strlen(name) >= (size_t)(at - comparison_string))
+		{
+			while (*at == '@')
+				at++;
+			return (*at - name[at - comparison_string]);
+		}
+		return (_symbol_sort_order(data, content));
+	}
+	return (_symbol_sort_order(data, content));
+}
+/*
  *	@brief this function gets symbols and prints them
  *
  *	@param file a t_mem* storing the file and infos
@@ -92,11 +119,24 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 			//TODO: FIX FOR VALUES STORED ELSEWHERE (discord)
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
+			//if new symbol contains @ try to replace version without it
+			//TODO: this is false, if it exist without @, old version is removed new version is inserted
+			//for the same reasons it's not allowed to change a set nodes should be const
+			//printf("symbol: %s\n", tmp_symbol->name);
+			char *offset_of_at = ft_strchr(tmp_symbol->name, '@');
+			//if symbol contains '@' search for duplicate without it and remove it.
+			if (offset_of_at)
+			{
+				*offset_of_at = '\0';
+				//remove duplicate without @
+				ft_bstremove(symbol_list, tmp_symbol, sort_function, free);
+				*offset_of_at = '@';
+			}
 			t_bst *tmp_node = ft_bstnew(tmp_symbol);
 			if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
 			{
-				free (tmp_node);
-				free (tmp_symbol);
+				free(tmp_node);
+				free(tmp_symbol);
 			}
 		}
 		//TODO: this could be better because name and value should be const 
@@ -130,6 +170,9 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
 }
 
+static inline int _case_sensitive(int a)
+{ return (a);}
+
 /* 	@brief case insentitive comparison of symbol names skipping leading '_'
  *
  *	@param s1 new node
@@ -138,31 +181,79 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 */
 static int	_compare_symbol_names(const char *s1, const char *s2)
 {
+	int (*case_sensitiveness)(int) = ft_tolower;
+	bool	skip_symbols = true;
 	size_t	s1_iterator = 0;
 	size_t	s2_iterator = 0;
-
 	for (;;)
 	{
-		if (s1[s1_iterator] == '\0')
-			break;
-		if (s2[s2_iterator] == '\0')
-			break;
-		if (ft_strchr("()*._/-", s1[s1_iterator]))
-		{
+		//skip non alphanum
+		while (skip_symbols && s1[s1_iterator] && ft_strchr("()[]{}*._/-:@", s1[s1_iterator]))
 			s1_iterator++;
-			continue;
-		}
-		if (ft_strchr("()*._/-", s2[s2_iterator]))
-		{
+		while (skip_symbols && s2[s2_iterator] && ft_strchr("()[]{}*._/-:@", s2[s2_iterator]))
 			s2_iterator++;
-			continue;
-		}
-		if (ft_tolower(s1[s1_iterator]) != ft_tolower(s2[s2_iterator]))
+		//if strings are different
+		if ((*case_sensitiveness)(s1[s1_iterator]) != (*case_sensitiveness)(s2[s2_iterator]))
 			break;
+		//reached end of both strings
+		if (s1[s1_iterator] == '\0' && s2[s2_iterator] == '\0')
+		{
+			s1_iterator = 0;
+			s2_iterator = 0;
+			//if strings equal with case insensitive, restart with case sensitive
+			if (case_sensitiveness == ft_tolower)
+			{
+				case_sensitiveness = _case_sensitive;
+				continue;
+			}
+			//if strings equal with symbol skipped, restart compare with symbols
+			if (skip_symbols)
+			{
+				skip_symbols = false;
+				continue;
+			}
+			return (0);
+		}
 		s1_iterator++;
 		s2_iterator++;
 	}
-	return ((unsigned char)ft_tolower(s1[s1_iterator]) - (unsigned char)ft_tolower(s2[s2_iterator]));
+	//do strings contain numbers ?
+	bool contains_number = false;
+	for (int i = 0; s1[i]; i++)
+	{
+		if (ft_isdigit(s1[i]))
+		{
+			contains_number = true;
+			break;
+		}
+	}
+	//if different because of symbols
+	//trying to insert with symbol while one without symbol is a duplicate
+	if (ft_strchr("()[]{}*/:@", s1[s1_iterator]) && s1[s1_iterator])
+	{
+		if (contains_number)
+			return (1);
+		return (-1);
+	}
+	//trying to insert without symbol while one with symbol is a duplicate
+	if (ft_strchr("()[]{}*/@", s2[s2_iterator]) && s2[s2_iterator])
+	{
+		if (s2[s2_iterator] == '@')
+			return (0);		//do not insert duplicate without @
+		//if both are symbols TODO
+		if (contains_number)	//first the symbol
+			return (-1);			//if number no symbol last
+		return (1);			//if no number no symbol first
+	}
+	//if different because of case
+	if (ft_tolower(s1[s1_iterator]) == ft_tolower(s2[s2_iterator]))
+	{
+		if (ft_islower(s1[s1_iterator]))
+			return (-1);			//insert lowercase first
+		return (1);					//insert uppercase last
+	}
+	//if different not because of symbols nor case -> just return difference
+	return ((unsigned char)((*case_sensitiveness)(s1[s1_iterator])) - (unsigned char)((*case_sensitiveness)(s2[s2_iterator])));
 }
 
 /*
@@ -183,25 +274,9 @@ static int _symbol_sort_order(void *new, void *inplace)
 	int diff = 0;
 
 	if ((diff = _compare_symbol_names(new_content->name, old_content->name)))
-	{
-		if (diff == '@')
-		{
-			char *at_in_new_name = ft_strchr(new_content->name, '@');
-			if (at_in_new_name)
-			{
-				if (ft_strlen(old_content->name)  == (size_t)(at_in_new_name - new_content->name))
-				{
-					old_content->name = new_content->name;
-					return (0);
-				}
-			}
-		}
 		return (diff);
-	}
 	if ((diff = new_content->type - old_content->type))
-	{
 		return (diff);
-	}
 	return (new_content->value - old_content->value);
 }
 
