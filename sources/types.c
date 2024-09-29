@@ -10,8 +10,7 @@ const char *st_bind[] = { "STB_LOCAL", "STB_GLOBAL", "STB_WEAK", "STB_NUM" };
 
 char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym)
 {
-	static int i;
-		Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
 	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
 	Elf64_Shdr *shdr = &shdr_table[symbol->st_shndx];
 
@@ -26,7 +25,6 @@ char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym)
 #if DEBUG
 	printf("%3d: %39s section: %3u type: %16u %14s %5s %8s %9s %9s symbol type: %13s bind: %s\n", i, sym->name, symbol->st_shndx, shdr->sh_type, (shdr->sh_type < 20) ? sh_type[shdr->sh_type]: "type offlimit", (executable_section) ? "exec" : "", (writable_section)? "writable" : "", (allocated_section) ? "allocated" : "", (mergeable_section) ? "mergeable" : "", (symbol_type < 8) ? st_type[symbol_type]: "st type offlimit", st_bind[symbol_bind]);
 #endif
-	i++;
 	if (symbol->st_shndx == SHN_UNDEF)
 	{
 		if (symbol_bind == STB_WEAK)
