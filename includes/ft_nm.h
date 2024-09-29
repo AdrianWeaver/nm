@@ -76,6 +76,11 @@ int	_check_shdr_32lsb(const t_mem *file);
 int	_check_shdr_64msb(const t_mem *file);
 int	_check_shdr_32msb(const t_mem *file);
 int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsigned char *section_name);
+int	get_section_name(const t_mem *file, t_bst **symbol_list);
+int	_get_section_name_64lsb(const t_mem *file, t_bst **symbol_list);
+int	_get_section_name_32lsb(const t_mem *file, t_bst **symbol_list);
+int	_get_section_name_64msb(const t_mem *file, t_bst **symbol_list);
+int	_get_section_name_32msb(const t_mem *file, t_bst **symbol_list);
 
 //symbols
 int	get_symbols(t_mem *file, uint8_t optionField, t_bst **symbol_list);

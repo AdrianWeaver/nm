@@ -193,3 +193,115 @@ int	_check_shdr_32msb(const t_mem *file)
 	(void)file;
 	return (0);
 }
+
+int	get_section_name(const t_mem *file, t_bst **symbol_list)
+{
+	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
+	{
+		if (_get_section_name_64lsb(file, symbol_list) != ERROR)
+			return (0);
+	}
+	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2LSB)
+	{
+		if (_get_section_name_32lsb(file, symbol_list) != ERROR)
+			return (0);
+	}
+	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2MSB)
+	{
+		if (_get_section_name_64msb(file, symbol_list) != ERROR)
+			return (0);
+	}
+	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2MSB)
+	{
+		if (_get_section_name_32msb(file, symbol_list) != ERROR)
+			return (0);
+	}
+	return (ERROR);
+}
+
+static int _get_type_from_name(char *name)
+{
+	if (ft_strncmp(name, ".bss", 4) == 0)
+		return ('b');
+	if (ft_strncmp(name, ".data", 5) == 0)
+		return ('d');
+	if (ft_strncmp(name, ".dyns", 4) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".comment", 8) == 0)
+		return ('n');
+	if (ft_strncmp(name, ".dynamic", 8) == 0)
+		return ('d');
+	if (ft_strncmp(name, ".fini_array", 9) == 0)
+		return ('d');
+	if (ft_strncmp(name, ".fini", 5) == 0)
+		return ('t');
+	if (ft_strncmp(name, ".gnu", 4) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".got", 4) == 0)
+		return ('d');
+	if (ft_strncmp(name, ".hash", 5) == 0)
+		return ('d');
+	if (ft_strncmp(name, ".init", 5) == 0)
+		return ('t');
+	if (ft_strncmp(name, ".init_array", 11) == 0)
+		return ('d');
+	if (ft_strncmp(name, ".interp", 7) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".note", 5) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".eh", 3) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".plt", 4) == 0)
+		return ('t');
+	if (ft_strncmp(name, ".rel", 4) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".rodata", 7) == 0)
+		return ('r');
+	if (ft_strncmp(name, ".text", 5) == 0)
+		return ('t');
+	return ('?');
+
+}
+int	_get_section_name_64lsb(const t_mem *file, t_bst **symbol_list)
+{
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
+	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
+	const char	*string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
+
+	for (int i = 0; i < ehdr->e_shnum; i++)
+	{
+		Elf64_Shdr *shdr = &shdr_table[i];
+		t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+		if (!tmp_symbol)
+		{
+			ft_bstclear(symbol_list, free);
+			fprintf(stderr, "nm: error: memory allocation failed\n");
+			return (ERROR);
+		}
+		symbol->name = &string_table[shdr->sh_name];
+		symbol->type = _get_type_from_name(symbol->name);
+		symbol->value = shdr->sh_addr;
+		t_bst *tmp_node = ft_bstnew(tmp_symbol);
+		ft_bstinsert(tmp_node,
+	}
+	(void)file; (void)symbol_list;
+	return (0);
+}
+
+int	_get_section_name_32lsb(const t_mem *file, t_bst **symbol_list)
+{
+	(void)file; (void)symbol_list;
+	return (0);
+}
+
+int	_get_section_name_64msb(const t_mem *file, t_bst **symbol_list)
+{
+	(void)file; (void)symbol_list;
+	return (0);
+}
+
+int	_get_section_name_32msb(const t_mem *file, t_bst **symbol_list)
+{
+	(void)file; (void)symbol_list;
+	return (0);
+}
