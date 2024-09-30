@@ -6,7 +6,8 @@
 
 //sorting functions for symbol binary tree
 static void	_print_symbol(void *node);
-//static int _symbol_contains_at(void *comparison, void *content);
+static void	_print_undefined_symbol(void *content);
+static void	_print_global_symbol(void *content);
 
 /*
  * @brief handler to check the correct shdr depending on class and endianness
@@ -147,7 +148,12 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	//printing symbols
 	if (option_field & OPTION_MULTIPLE_FILES)
 		printf("\n%s:\n", file->name);
-	(*iteration_function)(symbol_list, _print_symbol);
+	if (option_field & OPTION_U)
+		(*iteration_function)(symbol_list, _print_undefined_symbol);
+	else if (option_field & OPTION_G)
+		(*iteration_function)(symbol_list, _print_global_symbol);
+	else
+		(*iteration_function)(symbol_list, _print_symbol);
 	ft_bstclear(symbol_list, free);
 	return (0);
 }
@@ -296,21 +302,26 @@ static void	_print_symbol(void *content)
 	printf("%016lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
 }
 
-/*	@brief comparison function to find a name containing a pattern
- *
- *	@param a char
- *
-*/
-/*static int _symbol_contains_at(void *comparison, void *content)
+static void	_print_global_symbol(void *content)
 {
-	char *to_find = comparison;
-	char *str = (char *)content;
+	t_symbol *symbol = (t_symbol *)content;
 
-	for (int i = 0; str && str[i]; i++)
+	if (symbol->type == 'w' || symbol->type == 'U')
 	{
-		for (int j = 0; to_find && to_find[j]; i++)
-			if (str[i] == to_find[j])
-				return (1);
+		printf("                 %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
+		return ;
 	}
-	return (0);
-}*/
+	if (ft_isupper(symbol->type))
+	printf("%016lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
+}
+
+static void	_print_undefined_symbol(void *content)
+{
+	t_symbol *symbol = (t_symbol *)content;
+
+	if (symbol->type == 'w' || symbol->type == 'U')
+	{
+		printf("                 %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
+		return ;
+	}
+}
