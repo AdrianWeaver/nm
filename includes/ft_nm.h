@@ -76,18 +76,23 @@ int	_check_shdr_32lsb(const t_mem *file);
 int	_check_shdr_64msb(const t_mem *file);
 int	_check_shdr_32msb(const t_mem *file);
 int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsigned char *section_name);
-int	get_section_name(const t_mem *file, t_bst **symbol_list);
-int	_get_section_name_64lsb(const t_mem *file, t_bst **symbol_list);
-int	_get_section_name_32lsb(const t_mem *file, t_bst **symbol_list);
-int	_get_section_name_64msb(const t_mem *file, t_bst **symbol_list);
-int	_get_section_name_32msb(const t_mem *file, t_bst **symbol_list);
+
+//sections
+int	get_section_as_symbol(const t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_section_as_symbol_64lsb(const t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_section_as_symbol_32lsb(const t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_section_as_symbol_64msb(const t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_section_as_symbol_32msb(const t_mem *file, uint8_t option_field, t_bst **symbol_list);
 
 //symbols
 int	get_symbols(t_mem *file, uint8_t optionField, t_bst **symbol_list);
-int	_get_symbols_64lsb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
-int	_get_symbols_32lsb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
-int	_get_symbols_64msb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
-int	_get_symbols_32msb(t_mem *file, uint8_t optionField, t_bst **symbol_list);
+int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_symbols_64msb(t_mem *file, uint8_t option_field, t_bst **symbol_list);
+int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list);
+//sort order
+int _symbol_sort_order(void *new, void *inplace);
+int _symbol_no_sort(void *lhs, void *rhs);
 
 //type
 char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym);

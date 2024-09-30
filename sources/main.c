@@ -71,7 +71,7 @@ int file_routine(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	if (check_shdr(file) == ERROR)
 		return (ERROR);
 	if (option_field & OPTION_A)
-		get_section_name(file, symbol_list);
+		get_section_as_symbol(file, option_field, symbol_list);
 	if (get_symbols(file, option_field, symbol_list) == ERROR)
 		return (ERROR);
 	return (0);

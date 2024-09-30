@@ -1,6 +1,7 @@
 #include <elf.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "ft_nm.h"
 
 
@@ -194,26 +195,26 @@ int	_check_shdr_32msb(const t_mem *file)
 	return (0);
 }
 
-int	get_section_name(const t_mem *file, t_bst **symbol_list)
+int	get_section_as_symbol(const t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2LSB)
 	{
-		if (_get_section_name_64lsb(file, symbol_list) != ERROR)
+		if (_get_section_as_symbol_64lsb(file, option_field, symbol_list) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2LSB)
 	{
-		if (_get_section_name_32lsb(file, symbol_list) != ERROR)
+		if (_get_section_as_symbol_32lsb(file, option_field, symbol_list) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS64 && file->endianness == ELFDATA2MSB)
 	{
-		if (_get_section_name_64msb(file, symbol_list) != ERROR)
+		if (_get_section_as_symbol_64msb(file, option_field, symbol_list) != ERROR)
 			return (0);
 	}
 	if (file->class == ELFCLASS32 && file->endianness == ELFDATA2MSB)
 	{
-		if (_get_section_name_32msb(file, symbol_list) != ERROR)
+		if (_get_section_as_symbol_32msb(file, option_field, symbol_list) != ERROR)
 			return (0);
 	}
 	return (ERROR);
@@ -225,7 +226,7 @@ static int _get_type_from_name(char *name)
 		return ('b');
 	if (ft_strncmp(name, ".data", 5) == 0)
 		return ('d');
-	if (ft_strncmp(name, ".dyns", 4) == 0)
+	if (ft_strncmp(name, ".dyns", 5) == 0)
 		return ('r');
 	if (ft_strncmp(name, ".comment", 8) == 0)
 		return ('n');
@@ -241,10 +242,10 @@ static int _get_type_from_name(char *name)
 		return ('d');
 	if (ft_strncmp(name, ".hash", 5) == 0)
 		return ('d');
-	if (ft_strncmp(name, ".init", 5) == 0)
-		return ('t');
 	if (ft_strncmp(name, ".init_array", 11) == 0)
 		return ('d');
+	if (ft_strncmp(name, ".init", 5) == 0)
+		return ('t');
 	if (ft_strncmp(name, ".interp", 7) == 0)
 		return ('r');
 	if (ft_strncmp(name, ".note", 5) == 0)
@@ -262,15 +263,22 @@ static int _get_type_from_name(char *name)
 	return ('?');
 
 }
-int	_get_section_name_64lsb(const t_mem *file, t_bst **symbol_list)
+
+int	_get_section_as_symbol_64lsb(const t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
 	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[ehdr->e_shoff];
-	const char	*string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
+	char	*string_table = (char *)&file->raw[shdr_table[ehdr->e_shstrndx].sh_offset];
+	int (*sort_function)(void *, void*) = _symbol_sort_order;
 
-	for (int i = 0; i < ehdr->e_shnum; i++)
+	if (option_field & OPTION_P)
+		sort_function = _symbol_no_sort;
+	for (int i = 1; i < ehdr->e_shnum; i++)
 	{
 		Elf64_Shdr *shdr = &shdr_table[i];
+		//skip symbol sections
+		if (ft_strncmp(&string_table[shdr->sh_name], ".dynstr", 7) && (shdr->sh_type == SHT_SYMTAB || shdr->sh_type == SHT_STRTAB))
+			continue;
 		t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
 		if (!tmp_symbol)
 		{
@@ -278,30 +286,34 @@ int	_get_section_name_64lsb(const t_mem *file, t_bst **symbol_list)
 			fprintf(stderr, "nm: error: memory allocation failed\n");
 			return (ERROR);
 		}
-		symbol->name = &string_table[shdr->sh_name];
-		symbol->type = _get_type_from_name(symbol->name);
-		symbol->value = shdr->sh_addr;
+		tmp_symbol->name = &string_table[shdr->sh_name];
+		tmp_symbol->type = _get_type_from_name(tmp_symbol->name);
+		tmp_symbol->value = shdr->sh_addr;
 		t_bst *tmp_node = ft_bstnew(tmp_symbol);
-		ft_bstinsert(tmp_node,
+		if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
+		{
+			free(tmp_node);
+			free(tmp_symbol);
+		}
 	}
 	(void)file; (void)symbol_list;
 	return (0);
 }
 
-int	_get_section_name_32lsb(const t_mem *file, t_bst **symbol_list)
+int	_get_section_as_symbol_32lsb(const t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	(void)file; (void)symbol_list;
+	(void)option_field; (void)file; (void)symbol_list;
 	return (0);
 }
 
-int	_get_section_name_64msb(const t_mem *file, t_bst **symbol_list)
+int	_get_section_as_symbol_64msb(const t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	(void)file; (void)symbol_list;
+	(void)option_field; (void)file; (void)symbol_list;
 	return (0);
 }
 
-int	_get_section_name_32msb(const t_mem *file, t_bst **symbol_list)
+int	_get_section_as_symbol_32msb(const t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	(void)file; (void)symbol_list;
+	(void)option_field; (void)file; (void)symbol_list;
 	return (0);
 }

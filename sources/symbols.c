@@ -5,8 +5,6 @@
 #include "ft_nm.h"
 
 //sorting functions for symbol binary tree
-static int _symbol_sort_order(void *lhs, void *rhs);
-static int _symbol_no_sort(void *lhs, void *rhs);
 static void	_print_symbol(void *node);
 //static int _symbol_contains_at(void *comparison, void *content);
 
@@ -54,7 +52,6 @@ int _same_symbol_name_without_at(void *content, void *data)
 
 	if ((at = ft_strchr(comparison_string, '@')))
 	{
-		//printf("at: %s old_name: %s new_name: %s\n", at, name, comparison_string);
 		if (!ft_strncmp(name, comparison_string, at - comparison_string)
 			&& name[at - comparison_string] == '\0')
 				return (0);
@@ -84,20 +81,27 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	int (*sort_function)(void *, void*) = _symbol_sort_order;
 	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
 
+	//option -p does not sort
+	if (option_field & OPTION_P)
+		sort_function = _symbol_no_sort;
 	for (uint16_t i = 0; i < ehdr->e_shnum; i++) //iterate on sections
 	{
 		Elf64_Shdr *shdr = &shdr_table[i];
-		if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM) //if not a symbol section go next
+		//TODO: real nm treats .symtab before .dynsym it changes order of option -p
+		if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM && shdr->sh_type != SHT_SYMTAB_SHNDX) //if not a symbol section go next
 			continue;
 		Elf64_Sym *symbol_table = (Elf64_Sym *) &file->raw[shdr->sh_offset];
+		if (shdr->sh_entsize == 0)
+			continue;
 		for (uint32_t j = 0; j < shdr->sh_size / shdr->sh_entsize; j++) //iterate on symbols
 		{
 			Elf64_Sym *symbol = &symbol_table[j];
-			if (symbol->st_shndx > ehdr->e_shnum)
-				continue;
 			char *symbol_string_table = (char *)&file->raw[shdr_table[shdr->sh_link].sh_offset];
-
-
+			if (!(option_field & OPTION_A))
+			{
+				if (symbol->st_shndx == SHN_ABS)
+					continue;
+			}
 			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
 			if (!tmp_symbol)
 			{
@@ -118,13 +122,11 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 			//STAF START HERE
 			//TODO: FIX FOR VALUES STORED ELSEWHERE (discord)
 			tmp_symbol->value = symbol->st_value;
-			tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
-			//if new symbol contains @ try to replace version without it
-			//TODO: this is false, if it exist without @, old version is removed new version is inserted
-			//for the same reasons it's not allowed to change a set nodes should be const
-			//printf("symbol: %s\n", tmp_symbol->name);
-			char *offset_of_at = ft_strchr(tmp_symbol->name, '@');
+			tmp_symbol->type = 'a';
+			if (symbol->st_shndx <= ehdr->e_shnum)
+				tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
 			//if symbol contains '@' search for duplicate without it and remove it.
+			char *offset_of_at = ft_strchr(tmp_symbol->name, '@');
 			if (offset_of_at)
 			{
 				*offset_of_at = '\0';
@@ -139,12 +141,7 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				free(tmp_symbol);
 			}
 		}
-		//TODO: this could be better because name and value should be const 
-		//try to initialize a stack symbol then memcopy it in the malloced one.
-		//use const qualifiers in the symbol
 	}
-	if (option_field & OPTION_P) //do not sort
-		sort_function = _symbol_no_sort;
 	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
 		iteration_function = ft_bstriter;
 	//printing symbols
@@ -185,6 +182,7 @@ static int	_compare_symbol_names(const char *s1, const char *s2)
 	bool	skip_symbols = true;
 	size_t	s1_iterator = 0;
 	size_t	s2_iterator = 0;
+	//special case leading dot
 	for (;;)
 	{
 		//skip non alphanum
@@ -267,7 +265,7 @@ static int	_compare_symbol_names(const char *s1, const char *s2)
  *	@retval < 0 if newcontent should go to the left
  *	@retval = 0 if newcontent is already in the binary tree
 */
-static int _symbol_sort_order(void *new, void *inplace)
+int _symbol_sort_order(void *new, void *inplace)
 {
 	t_symbol *new_content = (t_symbol *)new;
 	t_symbol *old_content = (t_symbol *)inplace;
@@ -280,7 +278,7 @@ static int _symbol_sort_order(void *new, void *inplace)
 	return (new_content->value - old_content->value);
 }
 
-static int _symbol_no_sort(void *lhs, void *rhs)
+int _symbol_no_sort(void *lhs, void *rhs)
 {
 	//returning either 0 if duplicate or 1 if not duplicate
 	return (!!_symbol_sort_order(lhs,rhs));

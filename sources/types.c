@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "ft_nm.h"
 
-#define DEBUG 1
+//#define DEBUG 1
 const char *sh_type[] = { "SHT_NULL", "SHT_PROGBITS", "SHT_SYMTAB", "SHT_STRTAB", "SHT_RELA", "SHT_HASH", "SHT_DYNAMIC", "SHT_NOTE", "SHT_NOBITS", "SHT_REL", "SHT_SHLIB", "SHT_DYNSYM" , "12", "13", "SHT_INIT_ARRAY", "SHT_FINI_ARRAY", "SHT_PREINIT_ARRAY", "SHT_GROUP", "SHT_SYMTAB_SHNDX", "SHT_NUM" };
 const char *st_type[] = { "STT_NOTYPE", "STT_OBJECT", "STT_FUNC", "STT_SECTION", "STT_FILE", "STT_COMMON", "STT_TLS", "STT_NUM" };
 const char *st_bind[] = { "STB_LOCAL", "STB_GLOBAL", "STB_WEAK", "STB_NUM" };
