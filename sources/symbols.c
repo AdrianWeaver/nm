@@ -114,7 +114,7 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 			if (symbol->st_name == 0)
 			{
 				tmp_symbol->name = "";
-				if (symbol->st_size == 0)
+				if (symbol->st_size == 0 && symbol->st_shndx != SHN_ABS)
 				{
 					free(tmp_symbol);
 					continue;
