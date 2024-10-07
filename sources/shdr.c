@@ -85,6 +85,19 @@ int	_check_shdr_64lsb(const t_mem *file)
 		if (shdr->sh_name > shdr_table[ehdr->e_shstrndx].sh_size)
 			return (fprintf(stderr, "nm: %s: invalid string offset %u >= %lu for section `.shstrtab'\n",
 						file->name, shdr->sh_name, shdr_table[ehdr->e_shstrndx].sh_size), ERROR);
+		//checking string_table
+		if (shdr->sh_type == SHT_STRTAB)
+		{
+			const unsigned char strtab_first_char = file->raw[shdr->sh_offset];
+			const unsigned char strtab_last_char = file->raw[shdr->sh_offset + shdr->sh_size];
+			if (strtab_first_char != '\0' || strtab_last_char != '\0')
+			return (fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
+		}
+	}
+	for (int i = 0; i < ehdr->e_shnum; i++)
+	{
+		const Elf64_Shdr *shdr = &shdr_table[i];
+		//types will be checked laster. error is as follow
 		//checking that section type is valid
 		_check_sh_type_64lsb(file, shdr, &string_table[shdr->sh_name]);
 	}
