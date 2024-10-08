@@ -8,6 +8,9 @@
 static void	_print_symbol(void *node);
 static void	_print_undefined_symbol(void *content);
 static void	_print_global_symbol(void *content);
+static void	_print_symbol32(void *node);
+static void	_print_undefined_symbol32(void *content);
+static void	_print_global_symbol32(void *content);
 
 /*
  * @brief handler to check the correct shdr depending on class and endianness
@@ -206,11 +209,11 @@ int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	if (option_field & OPTION_MULTIPLE_FILES)
 		printf("\n%s:\n", file->name);
 	if (option_field & OPTION_U)
-		(*iteration_function)(symbol_list, _print_undefined_symbol);
+		(*iteration_function)(symbol_list, _print_undefined_symbol32);
 	else if (option_field & OPTION_G)
-		(*iteration_function)(symbol_list, _print_global_symbol);
+		(*iteration_function)(symbol_list, _print_global_symbol32);
 	else
-		(*iteration_function)(symbol_list, _print_symbol);
+		(*iteration_function)(symbol_list, _print_symbol32);
 	ft_bstclear(symbol_list, free);
 	return (0);
 }
@@ -373,11 +376,11 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	if (option_field & OPTION_MULTIPLE_FILES)
 		printf("\n%s:\n", file->name);
 	if (option_field & OPTION_U)
-		(*iteration_function)(symbol_list, _print_undefined_symbol);
+		(*iteration_function)(symbol_list, _print_undefined_symbol32);
 	else if (option_field & OPTION_G)
-		(*iteration_function)(symbol_list, _print_global_symbol);
+		(*iteration_function)(symbol_list, _print_global_symbol32);
 	else
-		(*iteration_function)(symbol_list, _print_symbol);
+		(*iteration_function)(symbol_list, _print_symbol32);
 	ft_bstclear(symbol_list, free);
 	return (0);
 }
@@ -531,6 +534,42 @@ static void	_print_undefined_symbol(void *content)
 	if (symbol->type == 'w' || symbol->type == 'U')
 	{
 		printf("                 %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
+		return ;
+	}
+}
+
+static void	_print_symbol32(void *content)
+{
+	t_symbol *symbol = (t_symbol *)content;
+
+	if (symbol->type == 'w' || symbol->type == 'U')
+	{
+		printf("         %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
+		return ;
+	}
+	printf("%08lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
+}
+
+static void	_print_global_symbol32(void *content)
+{
+	t_symbol *symbol = (t_symbol *)content;
+
+	if (symbol->type == 'w' || symbol->type == 'U')
+	{
+		printf("         %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
+		return ;
+	}
+	if (ft_isupper(symbol->type))
+	printf("%08lx %c %s\n", symbol->value, symbol->type, (symbol->name ? symbol->name : ""));
+}
+
+static void	_print_undefined_symbol32(void *content)
+{
+	t_symbol *symbol = (t_symbol *)content;
+
+	if (symbol->type == 'w' || symbol->type == 'U')
+	{
+		printf("         %c %s\n", symbol->type, (symbol->name ? symbol->name : ""));
 		return ;
 	}
 }
