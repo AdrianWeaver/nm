@@ -88,8 +88,8 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	for (uint16_t i = 0; i < ehdr->e_shnum; i++) //iterate on sections
 	{
 		Elf64_Shdr *shdr = &shdr_table[i];
-		//TODO: real nm treats .symtab before .dynsym it changes order of option -p
-		if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_DYNSYM && shdr->sh_type != SHT_SYMTAB_SHNDX) //if not a symbol section go next
+		//real nm does not look at SHT_DYNSYM
+		if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_SYMTAB_SHNDX) //if not a symbol section go next
 			continue;
 		Elf64_Sym *symbol_table = (Elf64_Sym *) &file->raw[shdr->sh_offset];
 		if (shdr->sh_entsize == 0)
@@ -120,8 +120,6 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 					continue;
 				}
 			}
-			//STAF START HERE
-			//TODO: FIX FOR VALUES STORED ELSEWHERE (discord)
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = 'a';
 			if (symbol->st_shndx <= ehdr->e_shnum)
@@ -146,6 +144,8 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
 		iteration_function = ft_bstriter;
 	//printing symbols
+	if (*symbol_list == NULL && !(option_field & OPTION_MULTIPLE_FILES))
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
 	if (option_field & OPTION_MULTIPLE_FILES)
 		printf("\n%s:\n", file->name);
 	if (option_field & OPTION_U)
