@@ -13,6 +13,7 @@
 # define ERROR -1
 #endif
 
+#define SHOW_TYPE_DETAILS 0
 #define SHOW_SECTION_AS_DEBUG 0
 
 typedef struct s_mem
@@ -78,6 +79,9 @@ int	_check_shdr_32lsb(const t_mem *file);
 int	_check_shdr_64msb(const t_mem *file);
 int	_check_shdr_32msb(const t_mem *file);
 int	_check_sh_type_64lsb(const t_mem *file, const Elf64_Shdr *shdr, const unsigned char *section_name);
+int	_check_sh_type_32lsb(const t_mem *file, const Elf32_Shdr *shdr, const unsigned char *section_name);
+int	_check_sh_type_64msb(const t_mem *file, const Elf64_Shdr *shdr, const unsigned char *section_name);
+int	_check_sh_type_32msb(const t_mem *file, const Elf32_Shdr *shdr, const unsigned char *section_name);
 
 //sections
 int	get_section_as_symbol(const t_mem *file, uint8_t option_field, t_bst **symbol_list);
@@ -98,7 +102,7 @@ int _symbol_no_sort(void *lhs, void *rhs);
 
 //type
 char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym);
-char get_symbol_type_32lsb(t_mem *file, Elf32_Sym *symbol);
+char get_symbol_type_32lsb(t_mem *file, Elf32_Sym *symbol, t_symbol *sym);
 char get_symbol_type_64msb(t_mem *file, Elf64_Sym *symbol);
 char get_symbol_type_32msb(t_mem *file, Elf32_Sym *symbol);
 

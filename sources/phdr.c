@@ -81,7 +81,35 @@ int	_check_phdr_64lsb(const t_mem *file)
 */
 int	_check_phdr_32lsb(const t_mem *file)
 {
-	(void)file;return (0); //no compilation errors
+	int					unique_phdr = 0;
+	int					unique_interp = 0;
+	int					pt_load_count = 0;
+	const Elf32_Ehdr	*ehdr = (Elf32_Ehdr *)file->raw;
+	const Elf32_Phdr	*phdr_table = (Elf32_Phdr *)&(file->raw[ehdr->e_phoff]);
+
+	for (int i = 0; i < ehdr->e_phnum; i++)
+	{
+		const Elf32_Phdr phdr = phdr_table[i];
+		if (phdr.p_type == PT_LOAD)
+		{
+			pt_load_count++;
+			if (phdr.p_align > 1 && ((phdr.p_vaddr % PAGESIZE) != (phdr.p_offset % PAGESIZE)))
+				fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+		}
+		if (phdr.p_type == PT_PHDR && (++unique_phdr > 1 || pt_load_count > 0))
+			return (ERROR);
+		if (phdr.p_type == PT_INTERP && (++unique_interp > 1 || pt_load_count > 0))
+			return (ERROR);
+		if (phdr.p_align == 0 || phdr.p_align == 1)
+			continue;
+		//returns non-zero if multiple bytes are set
+		if (phdr.p_align & (phdr.p_align - 1))
+			fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+		//PAGESIZE should not be hardcoded and should call for getpagesize() but not allowed in the subject
+		if ((phdr.p_vaddr % phdr.p_align) != (phdr.p_offset % phdr.p_align))
+			fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+	}
+	return (0);
 }
 
 

@@ -41,32 +41,6 @@ int	get_symbols(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 }
 
 /*
- *	@brief cmp function used to find a content that has the same name if you truncate before @
- *
- *	@return zero if node found non-zero if content is different
-*/
-int _same_symbol_name_without_at(void *content, void *data)
-{
-	char *name = ((t_symbol *)content)->name;
-	char *comparison_string = ((t_symbol *)data)->name;
-	char *at;
-
-	if ((at = ft_strchr(comparison_string, '@')))
-	{
-		if (!ft_strncmp(name, comparison_string, at - comparison_string)
-			&& name[at - comparison_string] == '\0')
-				return (0);
-		if (ft_strlen(name) >= (size_t)(at - comparison_string))
-		{
-			while (*at == '@')
-				at++;
-			return (*at - name[at - comparison_string]);
-		}
-		return (_symbol_sort_order(data, content));
-	}
-	return (_symbol_sort_order(data, content));
-}
-/*
  *	@brief this function gets symbols and prints them
  *
  *	@param file a t_mem* storing the file and infos
@@ -160,7 +134,85 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 
 int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
+	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)file->raw;
+	Elf32_Shdr *shdr_table = (Elf32_Shdr *)&file->raw[ehdr->e_shoff];
+	int (*sort_function)(void *, void*) = _symbol_sort_order;
+	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
+
+	//option -p does not sort
+	if (option_field & OPTION_P)
+		sort_function = _symbol_no_sort;
+	for (uint16_t i = 0; i < ehdr->e_shnum; i++) //iterate on sections
+	{
+		Elf32_Shdr *shdr = &shdr_table[i];
+		//real nm does not look at SHT_DYNSYM
+		if (shdr->sh_type != SHT_SYMTAB && shdr->sh_type != SHT_SYMTAB_SHNDX) //if not a symbol section go next
+			continue;
+		Elf32_Sym *symbol_table = (Elf32_Sym *) &file->raw[shdr->sh_offset];
+		if (shdr->sh_entsize == 0)
+			continue;
+		for (uint32_t j = 0; j < shdr->sh_size / shdr->sh_entsize; j++) //iterate on symbols
+		{
+			Elf32_Sym *symbol = &symbol_table[j];
+			char *symbol_string_table = (char *)&file->raw[shdr_table[shdr->sh_link].sh_offset];
+			if (!(option_field & OPTION_A))
+			{
+				if (symbol->st_shndx == SHN_ABS)
+					continue;
+			}
+			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+			if (!tmp_symbol)
+			{
+				ft_bstclear(symbol_list, free);
+				fprintf(stderr, "nm: error: memory allocation failed\n");
+				return (ERROR);
+			}
+			tmp_symbol->name = &symbol_string_table[symbol->st_name];
+			if (symbol->st_name == 0)
+			{
+				tmp_symbol->name = "";
+				if (symbol->st_size == 0 && symbol->st_shndx != SHN_ABS)
+				{
+					free(tmp_symbol);
+					continue;
+				}
+			}
+			tmp_symbol->value = symbol->st_value;
+			tmp_symbol->type = 'a';
+			if (symbol->st_shndx <= ehdr->e_shnum)
+				tmp_symbol->type = get_symbol_type_32lsb(file, symbol, tmp_symbol);
+			//if symbol contains '@' search for duplicate without it and remove it.
+			char *offset_of_at = ft_strchr(tmp_symbol->name, '@');
+			if (offset_of_at)
+			{
+				*offset_of_at = '\0';
+				//remove duplicate without @
+				ft_bstremove(symbol_list, tmp_symbol, sort_function, free);
+				*offset_of_at = '@';
+			}
+			t_bst *tmp_node = ft_bstnew(tmp_symbol);
+			if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
+			{
+				free(tmp_node);
+				free(tmp_symbol);
+			}
+		}
+	}
+	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
+		iteration_function = ft_bstriter;
+	//printing symbols
+	if (*symbol_list == NULL && !(option_field & OPTION_MULTIPLE_FILES))
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
+	if (option_field & OPTION_MULTIPLE_FILES)
+		printf("\n%s:\n", file->name);
+	if (option_field & OPTION_U)
+		(*iteration_function)(symbol_list, _print_undefined_symbol);
+	else if (option_field & OPTION_G)
+		(*iteration_function)(symbol_list, _print_global_symbol);
+	else
+		(*iteration_function)(symbol_list, _print_symbol);
+	ft_bstclear(symbol_list, free);
+	return (0);
 }
 
 int	_get_symbols_64msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)

@@ -10,58 +10,6 @@
 #include "libftprintf.h"
 #include "ft_nm.h"
 
-/*	@brief reads a buffersize at addr and confirms that every byte read 
- *	is within the mapped file.
- *
- *	@param t_mem *file the file structure with infos
- *	@param addr the address to attempt to read
- *	@param buffer_size the amount of bytes to be read
- *	@return NULL in case of error, address of offset if succeeded
-*/
-void *protected_read(const t_mem *mem, const uint8_t *addr, const uint8_t buffer_size)
-{
-	if (addr < mem->raw)
-		return (NULL);
-	if (addr + buffer_size > mem->raw + mem->size)
-		return (NULL);
-	return ((void *)addr);
-}
-
-/*	@brief attemps to read a string at addr and confirms every byte read is 
- *	within the mapped file, also confirms that the string is null terminated
- *
- *	@param t_mem *file the file structure with infos
- *	@param addr the address to attempt to read
- *	@param buffersize the amount of bytes to be read
- *	@return NULL in case of error, address of offset if succeeded
-*/
-const char *protected_read_str(const t_mem *mem, const char *addr)
-{
-	uint8_t i = 0;
-
-	if (addr < (char *)mem->raw)
-		return (NULL);
-	if (mem->endianness == ELFDATA2LSB)
-	{
-		while ((addr + i) < (char *)(mem->raw + mem->size))
-		{
-			if (*(addr + i) == '\0')
-				return (addr);
-			i++;
-		}
-	}
-	if (mem->endianness == ELFDATA2MSB)
-	{
-		while ((addr - i) > (char *)(mem->raw))
-		{
-			if (*(addr - i) == '\0')
-				return (addr);
-			i++;
-		}
-	}
-	return (NULL);
-}
-
 /*
  *	Here is a short explanation of the bitshifting
  *	to swap bytes in order to reverse endianness
