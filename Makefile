@@ -46,24 +46,6 @@ fclean:		clean
 re:			fclean
 			$(MAKE) all
 
-test:		$(NAME)
-			./$(NAME) modified_elf
-			nm modified_elf
-			#./$(NAME) $(NAME)
-
-vtest:		$(NAME)
-			#valgrind --leak-check=full ./$(NAME) $(NAME)
-			valgrind --leak-check=full ./$(NAME) modified_elf
-
-create:		
-			$(CC) $(CFLAGS) elfcreator.c -o ELFcreator
-			@./ELFcreator
-			@$(MAKE) --no-print-directory nm
-
-nm:			
-			@echo "nm modified_elf"
-			-@nm modified_elf || echo "nm returned $$?"
-			
-.PHONY: all, clean, fclean, re, test, vtest, create, libft
+.PHONY: all, clean, fclean, re, libft
 
 -include $(DEPS)
