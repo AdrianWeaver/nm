@@ -217,12 +217,169 @@ int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 
 int	_get_symbols_64msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file->raw;
+	Elf64_Shdr *shdr_table = (Elf64_Shdr *)&file->raw[rev64(ehdr->e_shoff)];
+	int (*sort_function)(void *, void*) = _symbol_sort_order;
+	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
+
+	//option -p does not sort
+	if (option_field & OPTION_P)
+		sort_function = _symbol_no_sort;
+	for (uint16_t i = 0; i < rev16(ehdr->e_shnum); i++) //iterate on sections
+	{
+		Elf64_Shdr *shdr = &shdr_table[i];
+		//real nm does not look at SHT_DYNSYM
+		if (rev32(shdr->sh_type) != SHT_SYMTAB && rev32(shdr->sh_type) != SHT_SYMTAB_SHNDX) //if not a symbol section go next
+			continue;
+		Elf64_Sym *symbol_table = (Elf64_Sym *) &file->raw[rev64(shdr->sh_offset)];
+		if (rev64(shdr->sh_entsize) == 0)
+			continue;
+		for (uint32_t j = 0; j < rev64(shdr->sh_size) / rev64(shdr->sh_entsize); j++) //iterate on symbols
+		{
+			Elf64_Sym *symbol = &symbol_table[j];
+			char *symbol_string_table = (char *)&file->raw[rev64(shdr_table[rev32(shdr->sh_link)].sh_offset)];
+			if (!(option_field & OPTION_A))
+			{
+				if (rev16(symbol->st_shndx) == SHN_ABS)
+					continue;
+			}
+			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+			if (!tmp_symbol)
+			{
+				ft_bstclear(symbol_list, free);
+				fprintf(stderr, "nm: error: memory allocation failed\n");
+				return (ERROR);
+			}
+			tmp_symbol->name = &symbol_string_table[rev32(symbol->st_name)];
+			if (rev32(symbol->st_name) == 0)
+			{
+				tmp_symbol->name = "";
+				if (rev64(symbol->st_size) == 0 && rev16(symbol->st_shndx) != SHN_ABS)
+				{
+					free(tmp_symbol);
+					continue;
+				}
+			}
+			tmp_symbol->value = rev64(symbol->st_value);
+			tmp_symbol->type = 'a';
+			if (rev16(symbol->st_shndx) <= rev16(ehdr->e_shnum))
+				tmp_symbol->type = get_symbol_type_64lsb(file, symbol, tmp_symbol);
+			//if symbol contains '@' search for duplicate without it and remove it.
+			char *offset_of_at = ft_strchr(tmp_symbol->name, '@');
+			if (offset_of_at)
+			{
+				*offset_of_at = '\0';
+				//remove duplicate without @
+				ft_bstremove(symbol_list, tmp_symbol, sort_function, free);
+				*offset_of_at = '@';
+			}
+			t_bst *tmp_node = ft_bstnew(tmp_symbol);
+			if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
+			{
+				free(tmp_node);
+				free(tmp_symbol);
+			}
+		}
+	}
+	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
+		iteration_function = ft_bstriter;
+	//printing symbols
+	if (*symbol_list == NULL && !(option_field & OPTION_MULTIPLE_FILES))
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
+	if (option_field & OPTION_MULTIPLE_FILES)
+		printf("\n%s:\n", file->name);
+	if (option_field & OPTION_U)
+		(*iteration_function)(symbol_list, _print_undefined_symbol);
+	else if (option_field & OPTION_G)
+		(*iteration_function)(symbol_list, _print_global_symbol);
+	else
+		(*iteration_function)(symbol_list, _print_symbol);
+	ft_bstclear(symbol_list, free);
+	return (0);
 }
 
 int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 {
-	(void)symbol_list;(void)file; (void)option_field; return (0); //no compilation error
+	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)file->raw;
+	Elf32_Shdr *shdr_table = (Elf32_Shdr *)&file->raw[rev32(ehdr->e_shoff)];
+	int (*sort_function)(void *, void*) = _symbol_sort_order;
+	void (*iteration_function)(t_bst **, void (*f)(void*)) = ft_bstiter;
+
+	//option -p does not sort
+	if (option_field & OPTION_P)
+		sort_function = _symbol_no_sort;
+	for (uint16_t i = 0; i < rev16(ehdr->e_shnum); i++) //iterate on sections
+	{
+		Elf32_Shdr *shdr = &shdr_table[i];
+		//real nm does not look at SHT_DYNSYM
+		if (rev32(shdr->sh_type) != SHT_SYMTAB
+			&& rev32(shdr->sh_type) != SHT_SYMTAB_SHNDX) //if not a symbol section go next
+			continue;
+		Elf32_Sym *symbol_table = (Elf32_Sym *) &file->raw[rev32(shdr->sh_offset)];
+		if (rev32(shdr->sh_entsize) == 0)
+			continue;
+		for (uint32_t j = 0; j < rev32(shdr->sh_size) / rev32(shdr->sh_entsize); j++) //iterate on symbols
+		{
+			Elf32_Sym *symbol = &symbol_table[j];
+			char *symbol_string_table = (char *)&file->raw[rev32(shdr_table[rev32(shdr->sh_link)].sh_offset)];
+			if (!(option_field & OPTION_A))
+			{
+				if (rev16(symbol->st_shndx) == SHN_ABS)
+					continue;
+			}
+			t_symbol *tmp_symbol = malloc(sizeof(*tmp_symbol) * 1);
+			if (!tmp_symbol)
+			{
+				ft_bstclear(symbol_list, free);
+				fprintf(stderr, "nm: error: memory allocation failed\n");
+				return (ERROR);
+			}
+			tmp_symbol->name = &symbol_string_table[symbol->st_name];
+			if (rev32(symbol->st_name) == 0)
+			{
+				tmp_symbol->name = "";
+				if (rev32(symbol->st_size) == 0 && rev16(symbol->st_shndx) != SHN_ABS)
+				{
+					free(tmp_symbol);
+					continue;
+				}
+			}
+			tmp_symbol->value = rev32(symbol->st_value);
+			tmp_symbol->type = 'a';
+			if (symbol->st_shndx <= ehdr->e_shnum)
+				tmp_symbol->type = get_symbol_type_32lsb(file, symbol, tmp_symbol);
+			//if symbol contains '@' search for duplicate without it and remove it.
+			char *offset_of_at = ft_strchr(tmp_symbol->name, '@');
+			if (offset_of_at)
+			{
+				*offset_of_at = '\0';
+				//remove duplicate without @
+				ft_bstremove(symbol_list, tmp_symbol, sort_function, free);
+				*offset_of_at = '@';
+			}
+			t_bst *tmp_node = ft_bstnew(tmp_symbol);
+			if (!ft_bstinsert(symbol_list, tmp_node, sort_function))
+			{
+				free(tmp_node);
+				free(tmp_symbol);
+			}
+		}
+	}
+	if ((option_field & (OPTION_R | OPTION_P)) == OPTION_R) //reverse print
+		iteration_function = ft_bstriter;
+	//printing symbols
+	if (*symbol_list == NULL && !(option_field & OPTION_MULTIPLE_FILES))
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
+	if (option_field & OPTION_MULTIPLE_FILES)
+		printf("\n%s:\n", file->name);
+	if (option_field & OPTION_U)
+		(*iteration_function)(symbol_list, _print_undefined_symbol);
+	else if (option_field & OPTION_G)
+		(*iteration_function)(symbol_list, _print_global_symbol);
+	else
+		(*iteration_function)(symbol_list, _print_symbol);
+	ft_bstclear(symbol_list, free);
+	return (0);
 }
 
 static inline int _case_sensitive(int a)

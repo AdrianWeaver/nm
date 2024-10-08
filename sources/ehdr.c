@@ -150,8 +150,33 @@ int	_check_ehdr_32lsb(const t_mem *file)
 */
 int	_check_ehdr_64msb(const t_mem *file)
 {
-	(void)file; //no compilation errors
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *) file->raw;
+	Elf64_Shdr *shdr_table = (Elf64_Shdr *) &file->raw[rev64(ehdr->e_shoff)];
+
+	//check e_type only core files are errors
+	if (rev16(ehdr->e_type) == ET_CORE)
+		goto format_error;
+
+	//check if the program header table is not too big for the file
+	if ((uint8_t)(rev32(ehdr->e_phoff) + (rev16(ehdr->e_phnum) * rev16(ehdr->e_phentsize))) > file->size)
+		goto format_error;
+
+	//check if the section header table is not too big for the file
+	if ((uint8_t)(rev32(ehdr->e_shoff) + (rev16(ehdr->e_shnum) * rev16(ehdr->e_shentsize))) > file->size)
+		goto format_error;
+
+	//check for string table
+	if (rev16(ehdr->e_shstrndx) == SHN_UNDEF						//no string table index
+		|| rev16(ehdr->e_shstrndx) > rev16(ehdr->e_shnum)			//string table index is outside of file
+		|| rev32(shdr_table[rev16(ehdr->e_shstrndx)].sh_type) != SHT_STRTAB)	//string table is not the correct type
+	{
+		fprintf(stderr, "nm: warning: %s has a corrupt string table index - ignoring\n", file->name);
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
+		return (ERROR);
+	}
 	return (0);
+	format_error:
+		return (fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
 }
 
 /* 	@brief check ehdr for 32 big endian file
@@ -161,6 +186,31 @@ int	_check_ehdr_64msb(const t_mem *file)
 */
 int	_check_ehdr_32msb(const t_mem *file)
 {
-	(void)file; //no compilation errors
+	Elf32_Ehdr *ehdr = (Elf32_Ehdr *) file->raw;
+	Elf32_Shdr *shdr_table = (Elf32_Shdr *) &file->raw[rev32(ehdr->e_shoff)];
+
+	//check e_type only core files are errors
+	if (rev16(ehdr->e_type) == ET_CORE)
+		goto format_error;
+
+	//check if the program header table is not too big for the file
+	if ((uint8_t)(rev32(ehdr->e_phoff) + (rev16(ehdr->e_phnum) * rev16(ehdr->e_phentsize))) > file->size)
+		goto format_error;
+
+	//check if the section header table is not too big for the file
+	if ((uint8_t)(rev32(ehdr->e_shoff) + (rev16(ehdr->e_shnum) * rev16(ehdr->e_shentsize))) > file->size)
+		goto format_error;
+
+	//check for string table
+	if (rev16(ehdr->e_shstrndx) == SHN_UNDEF						//no string table index
+		|| rev16(ehdr->e_shstrndx) > rev16(ehdr->e_shnum)			//string table index is outside of file
+		|| rev32(shdr_table[rev16(ehdr->e_shstrndx)].sh_type) != SHT_STRTAB)	//string table is not the correct type
+	{
+		fprintf(stderr, "nm: warning: %s has a corrupt string table index - ignoring\n", file->name);
+		fprintf(stderr, "nm: %s: no symbols\n", file->name);
+		return (ERROR);
+	}
 	return (0);
+	format_error:
+		return (fprintf(stderr, "nm: %s: file format not recognized\n", file->name), ERROR);
 }

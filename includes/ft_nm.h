@@ -103,8 +103,8 @@ int _symbol_no_sort(void *lhs, void *rhs);
 //type
 char get_symbol_type_64lsb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym);
 char get_symbol_type_32lsb(t_mem *file, Elf32_Sym *symbol, t_symbol *sym);
-char get_symbol_type_64msb(t_mem *file, Elf64_Sym *symbol);
-char get_symbol_type_32msb(t_mem *file, Elf32_Sym *symbol);
+char get_symbol_type_64msb(t_mem *file, Elf64_Sym *symbol, t_symbol *sym);
+char get_symbol_type_32msb(t_mem *file, Elf32_Sym *symbol, t_symbol *sym);
 
 //options
 int		get_options_and_file_list(int argc, char **argv, char ***files, uint8_t *bitfield);

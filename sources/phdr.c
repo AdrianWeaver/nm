@@ -122,8 +122,34 @@ int	_check_phdr_32lsb(const t_mem *file)
 */
 int	_check_phdr_64msb(const t_mem *file)
 {
-	//TODO: do this function.
-	(void)file;
+	int					unique_phdr = 0;
+	int					unique_interp = 0;
+	int					pt_load_count = 0;
+	const Elf64_Ehdr	*ehdr = (Elf64_Ehdr *)file->raw;
+	const Elf64_Phdr	*phdr_table = (Elf64_Phdr *)&(file->raw[rev64(ehdr->e_phoff)]);
+
+	for (int i = 0; i < rev16(ehdr->e_phnum); i++)
+	{
+		const Elf64_Phdr phdr = phdr_table[i];
+		if (rev32(phdr.p_type) == PT_LOAD)
+		{
+			pt_load_count++;
+			if (rev32(phdr.p_align) > 1 && ((rev64(phdr.p_vaddr) % PAGESIZE) != (rev64(phdr.p_offset) % PAGESIZE)))
+				fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+		}
+		if (rev32(phdr.p_type) == PT_PHDR && (++unique_phdr > 1 || pt_load_count > 0))
+			return (ERROR);
+		if (rev32(phdr.p_type) == PT_INTERP && (++unique_interp > 1 || pt_load_count > 0))
+			return (ERROR);
+		if (rev64(phdr.p_align) == 0 || rev64(phdr.p_align) == 1)
+			continue;
+		//returns non-zero if multiple bytes are set
+		if (rev64(phdr.p_align) & (rev64(phdr.p_align) - 1))
+			fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+		//PAGESIZE should not be hardcoded and should call for getpagesize() but not allowed in the subject
+		if ((rev64(phdr.p_vaddr) % rev64(phdr.p_align)) != (rev64(phdr.p_offset) % rev64(phdr.p_align)))
+			fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+	}
 	return (0);
 }
 
@@ -136,7 +162,33 @@ int	_check_phdr_64msb(const t_mem *file)
 */
 int	_check_phdr_32msb(const t_mem *file)
 {
-	//TODO: do this function
-	(void)file;
+	int					unique_phdr = 0;
+	int					unique_interp = 0;
+	int					pt_load_count = 0;
+	const Elf32_Ehdr	*ehdr = (Elf32_Ehdr *)file->raw;
+	const Elf32_Phdr	*phdr_table = (Elf32_Phdr *)&(file->raw[rev32(ehdr->e_phoff)]);
+
+	for (int i = 0; i < rev16(ehdr->e_phnum); i++)
+	{
+		const Elf32_Phdr phdr = phdr_table[i];
+		if (rev32(phdr.p_type) == PT_LOAD)
+		{
+			pt_load_count++;
+			if (rev32(phdr.p_align) > 1 && ((rev32(phdr.p_vaddr) % PAGESIZE) != (rev32(phdr.p_offset) % PAGESIZE)))
+				fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+		}
+		if (rev32(phdr.p_type) == PT_PHDR && (++unique_phdr > 1 || pt_load_count > 0))
+			return (ERROR);
+		if (rev32(phdr.p_type) == PT_INTERP && (++unique_interp > 1 || pt_load_count > 0))
+			return (ERROR);
+		if (rev32(phdr.p_align) == 0 || rev32(phdr.p_align) == 1)
+			continue;
+		//returns non-zero if multiple bytes are set
+		if (rev32(phdr.p_align) & (rev32(phdr.p_align) - 1))
+			fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+		//PAGESIZE should not be hardcoded and should call for getpagesize() but not allowed in the subject
+		if ((rev32(phdr.p_vaddr) % rev32(phdr.p_align)) != (rev32(phdr.p_offset) % rev32(phdr.p_align)))
+			fprintf(stderr, "nm: warning: %s has a program header with invalid alignment\n", file->name);
+	}
 	return (0);
 }
