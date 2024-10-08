@@ -13,6 +13,8 @@
 # define ERROR -1
 #endif
 
+#define SHOW_SECTION_AS_DEBUG 0
+
 typedef struct s_mem
 {
 	char		*name;
