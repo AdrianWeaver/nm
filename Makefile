@@ -25,9 +25,10 @@ CPPFLAGS = -MMD -c -g3
 
 LIBFT		=   libft/libft.a
 
-all:	$(NAME)
+all:	build
 
-$(NAME):	$(OBJS)	libft
+$(NAME):	$(OBJS) $(LIBFT)
+			@$(MAKE) --no-print-directory -C libft/
 			$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $@
 
 $(OBJS_PATH)%.o:	$(SRCS_PATH)%.c
@@ -37,10 +38,13 @@ $(OBJS_PATH)%.o:	$(SRCS_PATH)%.c
 libft:
 			@$(MAKE) --no-print-directory -C libft/
 
+build:		libft $(NAME)
+
 clean:
 			rm -rf $(OBJS_PATH)
 
 fclean:		clean
+			$(MAKE) --no-print-directory -C libft/ fclean
 			rm -rf $(NAME)
 
 re:			fclean
