@@ -87,8 +87,12 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				fprintf(stderr, "nm: error: memory allocation failed\n");
 				return (ERROR);
 			}
-			tmp_symbol->name = &symbol_string_table[symbol->st_name];
-			if (symbol->st_name == 0)
+			if (shdr_table[shdr->sh_link].sh_type != SHT_STRTAB)
+			{
+				fprintf(stderr, "nm: %s: attempt to load strings from a non-string section (number %d)\n", file->name, shdr->sh_link);
+				tmp_symbol->name = "(null)";
+			}
+			else if (symbol->st_name == 0)
 			{
 				tmp_symbol->name = "";
 				if (symbol->st_size == 0 && symbol->st_shndx != SHN_ABS)
@@ -97,6 +101,8 @@ int	_get_symbols_64lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 					continue;
 				}
 			}
+			else
+				tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = 'a';
 			if (symbol->st_shndx <= ehdr->e_shnum)
@@ -170,8 +176,12 @@ int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				fprintf(stderr, "nm: error: memory allocation failed\n");
 				return (ERROR);
 			}
-			tmp_symbol->name = &symbol_string_table[symbol->st_name];
-			if (symbol->st_name == 0)
+			if (shdr_table[shdr->sh_link].sh_type != SHT_STRTAB)
+			{
+				fprintf(stderr, "nm: %s: attempt to load strings from a non-string section (number %d)\n", file->name, shdr->sh_link);
+				tmp_symbol->name = "(null)";
+			}
+			else if (symbol->st_name == 0)
 			{
 				tmp_symbol->name = "";
 				if (symbol->st_size == 0 && symbol->st_shndx != SHN_ABS)
@@ -180,6 +190,8 @@ int	_get_symbols_32lsb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 					continue;
 				}
 			}
+			else
+				tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			tmp_symbol->value = symbol->st_value;
 			tmp_symbol->type = 'a';
 			if (symbol->st_shndx <= ehdr->e_shnum)
@@ -253,8 +265,12 @@ int	_get_symbols_64msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				fprintf(stderr, "nm: error: memory allocation failed\n");
 				return (ERROR);
 			}
-			tmp_symbol->name = &symbol_string_table[rev32(symbol->st_name)];
-			if (rev32(symbol->st_name) == 0)
+			if (rev32(shdr_table[rev32(shdr->sh_link)].sh_type) != SHT_STRTAB)
+			{
+				fprintf(stderr, "nm: %s: attempt to load strings from a non-string section (number %d)\n", file->name, rev32(shdr->sh_link));
+				tmp_symbol->name = "(null)";
+			}
+			else if (rev32(symbol->st_name) == 0)
 			{
 				tmp_symbol->name = "";
 				if (rev64(symbol->st_size) == 0 && rev16(symbol->st_shndx) != SHN_ABS)
@@ -263,6 +279,8 @@ int	_get_symbols_64msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 					continue;
 				}
 			}
+			else
+				tmp_symbol->name = &symbol_string_table[rev32(symbol->st_name)];
 			tmp_symbol->value = rev64(symbol->st_value);
 			tmp_symbol->type = 'a';
 			if (rev16(symbol->st_shndx) <= rev16(ehdr->e_shnum))
@@ -337,6 +355,22 @@ int	_get_symbols_32msb(t_mem *file, uint8_t option_field, t_bst **symbol_list)
 				fprintf(stderr, "nm: error: memory allocation failed\n");
 				return (ERROR);
 			}
+			if (rev32(shdr_table[rev32(shdr->sh_link)].sh_type) != SHT_STRTAB)
+			{
+				fprintf(stderr, "nm: %s: attempt to load strings from a non-string section (number %d)\n", file->name, rev32(shdr->sh_link));
+				tmp_symbol->name = "(null)";
+			}
+			else if (rev32(symbol->st_name) == 0)
+			{
+				tmp_symbol->name = "";
+				if (rev32(symbol->st_size) == 0 && rev16(symbol->st_shndx) != SHN_ABS)
+				{
+					free(tmp_symbol);
+					continue;
+				}
+			}
+			else
+				tmp_symbol->name = &symbol_string_table[rev32(symbol->st_name)];
 			tmp_symbol->name = &symbol_string_table[symbol->st_name];
 			if (rev32(symbol->st_name) == 0)
 			{
